@@ -3,6 +3,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 // Get environment variables - Next.js automatically loads .env files
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://edu-bridge-ai-backend.vercel.app";
 
 // Create Supabase client
 let supabase: SupabaseClient | null = null;
