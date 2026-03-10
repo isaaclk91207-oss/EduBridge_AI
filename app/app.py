@@ -39,7 +39,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-         # Replace with your actual Vercel frontend URL
+        "https://edu-bridge-ai-frontend.vercel.app",  # Your Vercel frontend
     ],
     allow_credentials=True,
     allow_methods=["*"],

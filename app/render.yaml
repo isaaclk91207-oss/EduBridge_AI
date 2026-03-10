@@ -9,13 +9,8 @@ services:
       - key: PYTHON_VERSION
         value: "3.11"
       - key: FRONTEND_URL
-        value: https://your-frontend.vercel.app
-        # Replace with your actual Vercel frontend URL
+        value: https://edu-bridge-ai-frontend.vercel.app
       - key: DATABASE_URL
         sync: false
-        # IMPORTANT: Set this in Render Dashboard for security
-        # Neon PostgreSQL format: postgresql://user:pass@host.neon.tech/db?sslmode=require
       - key: SECRET_KEY
         sync: false
-        # IMPORTANT: Generate and set in Render Dashboard (32+ characters)
-
