@@ -1,5 +1,11 @@
 # Vercel Deployment Guide - EduBridge AI
 
+## ⚠️ CRITICAL: Database Configuration Required
+
+**Before deploying, you MUST set up your Neon PostgreSQL database and configure the DATABASE_URL environment variable in Vercel.**
+
+---
+
 ## Architecture Overview
 
 Your project uses a **dual-deployment** architecture:
