@@ -6,6 +6,11 @@
       "use": "@vercel/python"
     }
   ],
+  "env": {
+    "DATABASE_URL": "@database-url",
+    "SECRET_KEY": "@secret-key",
+    "PYTHON_VERSION": "3.11"
+  },
   "rewrites": [
     {
       "source": "/(.*)",
