@@ -9,7 +9,10 @@ import os
 # Add the project root to Python path
 sys.path.insert(0, os.getcwd())
 
-# Import များကို 'backend.' မပါဘဲ 'app.' ပုံစံဖြင့် ပြင်ဆင်သည်
+# Get frontend URL from environment (for production) or use localhost (for dev)
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+
+# Import database utilities
 from app.core.db_utility import database_initialize
 from app.Schemas.schemas import ChatRequest
 from app.database.storage import get_all_lectures, get_all_candidates
@@ -18,35 +21,36 @@ from app.routes.v1.authentication_route import router as authentication_router
 from app.routes.v1.user import router as user_router
 
 
-
 @asynccontextmanager
 async def db_lifespan(app: FastAPI):
-    # Try to initialize database, but continue even if it fails (for development without DB)
+    """Initialize database on startup"""
     try:
         await database_initialize()
+        print("Database initialized successfully")
     except Exception as e:
-        print(f"Warning: Database initialization failed (expected if no DB configured): {e}")
+        print(f"Warning: Database initialization failed: {e}")
     yield
 
 
-app = FastAPI(title="EduBridge AI API", version="0.0.1" , lifespan=db_lifespan)
+app = FastAPI(title="EduBridge AI API", version="0.0.1", lifespan=db_lifespan)
 
-
-# CORS Setup - allows all origin including localhost:3000 for Next.js frontend
+# CORS Setup - allows localhost and production Vercel frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://edu-bridge-ai-liard.vercel.app",
-        "http://localhost:3000", # Local မှာ စမ်းဖို့အတွက်
+        "http://localhost:3000",
+         # Replace with your actual Vercel frontend URL
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Include routers
 app.include_router(issues_router)
 app.include_router(authentication_router)
 app.include_router(user_router)
+
 
 
 # Health Check Endpoint
