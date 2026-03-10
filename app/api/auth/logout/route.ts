@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-const FASTAPI_URL = process.env.NEXT_PUBLIC_FASTAPI_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edu-bridge-ai-backend.vercel.app';
 
 export async function POST() {
   try {
@@ -13,7 +13,7 @@ export async function POST() {
     // Call FastAPI backend logout endpoint (if available)
     if (accessToken) {
       try {
-        await fetch(`${FASTAPI_URL}/authentication/logout`, {
+        await fetch(`${API_URL}/authentication/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${accessToken}`,

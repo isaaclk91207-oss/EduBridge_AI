@@ -181,7 +181,7 @@ export default function AICareerPortfolio() {
       }
 
       // Otherwise call the AI backend for new analysis
-      const response = await fetch('http://localhost:8000/chat/cofounder', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://edu-bridge-ai-backend.vercel.app'}/chat/cofounder`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

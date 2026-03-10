@@ -212,7 +212,7 @@ export default function Courses() {
     try {
       const userId = getUserId();
       
-      const response = await fetch('http://localhost:8000/api/chat', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://edu-bridge-ai-backend.vercel.app'}/api/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -242,7 +242,7 @@ export default function Courses() {
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'ai',
-        content: 'Server Connection Error. Please ensure the backend is running at http://localhost:8000'
+        content: 'Server Connection Error. Please try again later.'
       };
       setChatMessages(prev => [...prev, errorMessage]);
     } finally {

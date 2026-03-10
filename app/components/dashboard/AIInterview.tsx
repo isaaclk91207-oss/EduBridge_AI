@@ -89,7 +89,7 @@ export default function AIInterview() {
     try {
       const userId = generateUserId();
       const response = await fetch(
-        `http://localhost:8000/chat/mentor`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://edu-bridge-ai-backend.vercel.app'}/chat/mentor`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// FastAPI backend URL - change this to your actual backend URL
-const FASTAPI_URL = process.env.NEXT_PUBLIC_FASTAPI_URL || 'http://localhost:8000';
+// FastAPI backend URL - uses env variable with fallback to Vercel production
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edu-bridge-ai-backend.vercel.app';
 
 export async function GET(request: NextRequest) {
   try {
     // Forward request to FastAPI backend
-    const response = await fetch(`${FASTAPI_URL}/user/profile`, {
+    const response = await fetch(`${API_URL}/user/profile`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ export async function PUT(request: NextRequest) {
     };
 
     // Forward request to FastAPI backend
-    const response = await fetch(`${FASTAPI_URL}/user/profile`, {
+    const response = await fetch(`${API_URL}/user/profile`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

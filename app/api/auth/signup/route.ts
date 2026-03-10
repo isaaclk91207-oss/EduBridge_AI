@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // FastAPI backend URL
-const FASTAPI_URL = process.env.NEXT_PUBLIC_FASTAPI_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edu-bridge-ai-backend.vercel.app';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Forward signup request to FastAPI backend
-    const response = await fetch(`${FASTAPI_URL}/authentication/register`, {
+    const response = await fetch(`${API_URL}/authentication/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Forward auth check to FastAPI backend
-    const response = await fetch(`${FASTAPI_URL}/authentication/register`, {
+    const response = await fetch(`${API_URL}/authentication/register`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
