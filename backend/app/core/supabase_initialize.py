@@ -11,11 +11,10 @@ connect_args = {}
 engine_kwargs = {"echo": True}
 
 if "postgresql" in DB_URI or "postgres" in DB_URI:
-    # For Supabase pooler with asyncpg, disable prepared statement caching
-    # This fixes DuplicatePreparedStatementError with connection pooler
     connect_args = {
-        "ssl": "require",  # Use SSL for Supabase pooler
-        "statement_cache_size": 0,  # Disable prepared statement caching for pooler
+        "ssl": "require",
+        "statement_cache_size": 0,
+        "prepared_statement_cache_size": 0, # ဒီစာကြောင်းကို ထည့်ပေးပါ
     }
     # Add pool_pre_ping for connection stability with pooler
     engine_kwargs["pool_pre_ping"] = True
