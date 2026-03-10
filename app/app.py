@@ -6,19 +6,19 @@ from contextlib import asynccontextmanager
 import sys
 import os
 
-# Add the project root to Python path
+# Add the current directory to Python path
 sys.path.insert(0, os.getcwd())
 
 # Get frontend URL from environment (for production) or use localhost (for dev)
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 
 # Import database utilities
-from app.core.db_utility import database_initialize
-from app.Schemas.schemas import ChatRequest
-from app.database.storage import get_all_lectures, get_all_candidates
-from app.routes.v1.agent_route import router as issues_router
-from app.routes.v1.authentication_route import router as authentication_router
-from app.routes.v1.user import router as user_router
+from core.db_utility import database_initialize
+from Schemas.schemas import ChatRequest
+from database.storage import get_all_lectures, get_all_candidates
+from routes.v1.agent_route import router as issues_router
+from routes.v1.authentication_route import router as authentication_router
+from routes.v1.user import router as user_router
 
 
 @asynccontextmanager
@@ -39,7 +39,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://edu-bridge-ai-frontend.vercel.app",  # Your Vercel frontend
+        "https://edu-bridge-ai-frontend.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -50,7 +50,6 @@ app.add_middleware(
 app.include_router(issues_router)
 app.include_router(authentication_router)
 app.include_router(user_router)
-
 
 
 # Health Check Endpoint
@@ -176,12 +175,8 @@ async def chat(request: ChatRequest):
 
     return ChatResponse(reply=ai_reply)
 
-    # main.py မှာ ထည့်ရမည့် AI Chat Route နမူနာ
-
 
 @app.post("/api/ai-tutor")
 async def ai_tutor(message: str, video_title: str):
-    # ဒီနေရာမှာ Gemini ဒါမှမဟုတ် OpenAI API ကို ခေါ်ပြီး
-    # Video Title နဲ့ သက်ဆိုင်တဲ့ ရှင်းလင်းချက်ကို ပြန်ပေးရမှာပါ
     response = f"You asked about {video_title}. Here is the explanation: {message}..."
     return {"reply": response}
