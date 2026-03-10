@@ -36,7 +36,7 @@ app = FastAPI(title="EduBridge AI API", version="0.0.1" , lifespan=db_lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://edu-bridge-ai.vercel.app",
+        "https://edu-bridge-ai-liard.vercel.app",
         "http://localhost:3000", # Local မှာ စမ်းဖို့အတွက်
     ],
     allow_credentials=True,
