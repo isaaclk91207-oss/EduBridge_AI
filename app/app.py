@@ -35,7 +35,11 @@ app = FastAPI(title="EduBridge AI API", version="0.0.1" , lifespan=db_lifespan)
 # CORS Setup - allows all origin including localhost:3000 for Next.js frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development
+    allow_origins=[
+        "https://edu-bridge-ai.vercel.app",
+        "http://localhost:3000", # Local မှာ စမ်းဖို့အတွက်
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
