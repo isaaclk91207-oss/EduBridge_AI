@@ -14,13 +14,19 @@ if "postgresql" in DB_URI or "postgres" in DB_URI:
     connect_args = {
         "ssl": "require",
         "statement_cache_size": 0,
-        "prepared_statement_cache_size": 0, # ဒီစာကြောင်းကို ထည့်ပေးပါ
+        "prepared_statement_cache_size": 0,
     }
     # Add pool_pre_ping for connection stability with pooler
-    engine_kwargs["pool_pre_ping"] = True
-    # Add pool settings for better connection management
-    engine_kwargs["pool_size"] = 5
-    engine_kwargs["max_overflow"] = 10
+    engine_kwargs = {"echo": False, "pool_pre_ping": True, "pool_size": 1, "max_overflow": 0}
+
+if "postgresql" in DB_URI or "postgres" in DB_URI:
+    connect_args = {
+        "ssl": "require",
+        "statement_cache_size": 0,
+        "prepared_statement_cache_size": 0,
+    }
+else:
+    connect_args = {}
 
 async_engine = create_async_engine(DB_URI, connect_args=connect_args, **engine_kwargs)
 async_session = async_sessionmaker(bind=async_engine, expire_on_commit=False, class_=AsyncSession)
