@@ -8,6 +8,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.11"
+      - key: PORT
+        value: "10000"
       - key: FRONTEND_URL
         value: https://edu-bridge-ai-frontend.vercel.app
       - key: DATABASE_URL
