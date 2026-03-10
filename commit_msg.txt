@@ -1,1 +1,1 @@
- Fix Vercel config and add deployment guide  
+ Update deployment guide with critical warning  
