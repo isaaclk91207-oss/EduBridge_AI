@@ -1,0 +1,194 @@
+@import "tailwindcss";
+
+/* CSS Variables for Theme - Must be defined for both light and dark */
+:root {
+  /* Light Mode */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --accent-blue: #3b82f6;
+  --accent-cyan: #06b6d4;
+  --accent-glow: rgba(6, 182, 212, 0.3);
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --sidebar-bg: rgba(255, 255, 255, 0.4);
+}
+
+/* Dark Mode */
+.dark {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-color: #334155;
+  --accent-blue: #38bdf8;
+  --accent-cyan: #22d3ee;
+  --accent-glow: rgba(34, 211, 238, 0.5);
+  --card-bg: rgba(30, 41, 59, 0.8);
+  --sidebar-bg: rgba(15, 23, 42, 0.9);
+}
+
+/* Tailwind Theme Configuration */
+@theme inline {
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Base styles */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-cyan);
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #22d3ee;
+}
+
+/* Neon glow animation */
+@keyframes neonPulse {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--accent-glow),
+                0 0 10px var(--accent-glow),
+                0 0 15px var(--accent-glow);
+  }
+  50% {
+    box-shadow: 0 0 10px var(--accent-glow),
+                0 0 20px var(--accent-glow),
+                0 0 30px var(--accent-glow);
+  }
+}
+
+.neon-glow {
+  animation: neonPulse 2s ease-in-out infinite;
+}
+
+/* Dark mode specific neon glow */
+.dark .neon-glow {
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.5),
+              0 0 30px rgba(34, 211, 238, 0.3),
+              0 0 45px rgba(34, 211, 238, 0.1);
+}
+
+/* Glassmorphism */
+.glass {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(to right, var(--accent-blue), var(--accent-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card component base */
+.card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Input base */
+.input {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  color: var(--text-primary);
+  transition: all 0.2s ease-in-out;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+/* Button base */
+.btn {
+  background-color: var(--accent-blue);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+/* Smooth transitions for all elements */
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
+}
+
+/* Force dark mode styles for common elements */
+.dark bg-white {
+  background-color: var(--bg-secondary) !important;
+}
+
+.dark text-slate-800 {
+  color: var(--text-primary) !important;
+}
+
+.dark text-slate-700 {
+  color: var(--text-secondary) !important;
+}
+
+.dark text-slate-500 {
+  color: var(--text-muted) !important;
+}
+
+.dark border-blue-100 {
+  border-color: var(--border-color) !important;
+}
+
+/* Sidebar active menu glow */
+.dark .menu-active {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(34, 211, 238, 0.1));
+  border-left: 3px solid #22d3ee;
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
+}
+
+/* Roadmap node dark mode */
+.dark .roadmap-node {
+  background: rgba(34, 211, 238, 0.1);
+  border: 2px solid rgba(34, 211, 238, 0.5);
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+}
+
+.dark .roadmap-arrow {
+  stroke: #22d3ee;
+  filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.8));
+}

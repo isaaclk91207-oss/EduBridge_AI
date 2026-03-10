@@ -1,0 +1,16 @@
+fastapi==0.129.0
+uvicorn==0.40.0
+python-dotenv==1.2.1
+psycopg2-binary==2.9.9
+asyncpg==0.30.0
+sqlalchemy[asyncio]==2.0.28
+pydantic==2.12.5
+pydantic-settings==2.13.0
+supabase==2.28.0
+httpx==0.28.1
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.22
+openai==2.21.0
+google-genai==1.63.0
+google-api-python-client==2.93.0

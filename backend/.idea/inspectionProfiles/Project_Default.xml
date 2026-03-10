@@ -1,0 +1,93 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <list>
+          <option value="cachetools" />
+          <option value="certifi" />
+          <option value="cffi" />
+          <option value="charset-normalizer" />
+          <option value="click" />
+          <option value="colorama" />
+          <option value="cryptography" />
+          <option value="deprecation" />
+          <option value="distro" />
+          <option value="dnspython" />
+          <option value="email-validator" />
+          <option value="fastapi-cli" />
+          <option value="fastapi-cloud-cli" />
+          <option value="fastar" />
+          <option value="fsspec" />
+          <option value="google-api-core" />
+          <option value="google-api-python-client" />
+          <option value="google-auth" />
+          <option value="google-auth-httplib2" />
+          <option value="google-genai" />
+          <option value="googleapis-common-protos" />
+          <option value="h11" />
+          <option value="h2" />
+          <option value="hpack" />
+          <option value="httpcore" />
+          <option value="httplib2" />
+          <option value="httptools" />
+          <option value="httpx" />
+          <option value="hyperframe" />
+          <option value="Jinja2" />
+          <option value="jiter" />
+          <option value="markdown-it-py" />
+          <option value="MarkupSafe" />
+          <option value="mdurl" />
+          <option value="mmh3" />
+          <option value="multidict" />
+          <option value="openai" />
+          <option value="packaging" />
+          <option value="postgrest" />
+          <option value="propcache" />
+          <option value="proto-plus" />
+          <option value="protobuf" />
+          <option value="pyasn1" />
+          <option value="pyasn1_modules" />
+          <option value="pycparser" />
+          <option value="pydantic-extra-types" />
+          <option value="pydantic-settings" />
+          <option value="Pygments" />
+          <option value="pyiceberg" />
+          <option value="PyJWT" />
+          <option value="pyparsing" />
+          <option value="pyroaring" />
+          <option value="python-dateutil" />
+          <option value="python-dotenv" />
+          <option value="python-multipart" />
+          <option value="PyYAML" />
+          <option value="realtime" />
+          <option value="requests" />
+          <option value="rich" />
+          <option value="rich-toolkit" />
+          <option value="rignore" />
+          <option value="rsa" />
+          <option value="sentry-sdk" />
+          <option value="shellingham" />
+          <option value="six" />
+          <option value="sniffio" />
+          <option value="storage3" />
+          <option value="StrEnum" />
+          <option value="strictyaml" />
+          <option value="supabase" />
+          <option value="supabase-auth" />
+          <option value="supabase-functions" />
+          <option value="tenacity" />
+          <option value="tqdm" />
+          <option value="typer" />
+          <option value="uritemplate" />
+          <option value="urllib3" />
+          <option value="uvicorn" />
+          <option value="watchfiles" />
+          <option value="websockets" />
+          <option value="yarl" />
+          <option value="zstandard" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

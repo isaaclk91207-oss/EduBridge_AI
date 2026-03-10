@@ -1,0 +1,21 @@
+# Node modules
+node_modules
+.next
+dist
+build
+npm-debug.log*
+
+# Python environment
+.venv
+__pycache__
+*.pyc
+venv/
+env/
+
+# Environment variables
+.env
+
+# Others
+.DS_Store
+.vercel
+
