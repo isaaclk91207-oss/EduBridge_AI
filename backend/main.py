@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 from core.database import database_initialize
 from routes import authentication, users, lectures, candidates
 # Note: agent_route is in Next.js API routes (app/routes/v1/), not in FastAPI backend
-# from routes.v1.agent_route import router as agent_router
+from routes.v1.agent_route import router as agent_router
 
 
 @asynccontextmanager
@@ -48,7 +48,8 @@ app.include_router(authentication.router, prefix="/api/auth", tags=["Authenticat
 app.include_router(users.router, prefix="/api/users", tags=["Users"])
 app.include_router(lectures.router, prefix="/api/lectures", tags=["Lectures"])
 app.include_router(candidates.router, prefix="/api/candidates", tags=["Candidates"])
-# Note: AI agent routes are handled by Next.js API routes (app/routes/v1/)
+# Include AI agent routes with /api/v1 prefix
+app.include_router(agent_router, prefix="/api/v1")
 
 
 # Health Check Endpoint
