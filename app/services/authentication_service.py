@@ -4,11 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from starlette import status
 
-from app.core.config import settings
-from app.models.psql_model import User
-from app.Schemas.schemas import UserLogin, UserRegister
-from app.services.jwt_service import generate_access_token, generate_refresh_token
-from app.services.password_hashing import hash_password, verify_password
+from core.config import settings
+from models.psql_model import User
+from Schemas.schemas import UserLogin, UserRegister
+from services.jwt_service import generate_access_token, generate_refresh_token
+from services.password_hashing import hash_password, verify_password
 
 
 async def get_user_by_email(email: str, session: AsyncSession) -> User | None:

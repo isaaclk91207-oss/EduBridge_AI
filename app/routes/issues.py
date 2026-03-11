@@ -4,8 +4,8 @@ from fastapi.responses import StreamingResponse
 import os
 
 # Import schemas - use relative import from app/
-from app.schemas import ChatRequest, VideoResponse
-from app.storage import gemini_client, sf_client, groq_client, get_youtube_videos, save_chat_to_db, get_chat_history, save_portfolio
+from schemas import ChatRequest, VideoResponse
+from storage import gemini_client, sf_client, groq_client, get_youtube_videos, save_chat_to_db, get_chat_history, save_portfolio
 
 router = APIRouter(prefix="/chat", tags=["AI Agents"])
 

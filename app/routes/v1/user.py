@@ -4,9 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from starlette import status
 
-from app.core.db_utility import get_async_session
-from app.models.psql_model import User
-from app.services.jwt_service import decode_token
+from core.db_utility import get_async_session
+from models.psql_model import User
+from services.jwt_service import decode_token
 
 router = APIRouter(prefix="/user", tags=["user"])
 

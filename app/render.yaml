@@ -3,7 +3,7 @@ services:
     name: edubridge-backend
     env: python
     region: oregon
-    rootDir: .
+    rootDir: app
     buildCommand: pip install --no-cache-dir -r app/requirements.txt
     startCommand: uvicorn app.app --host 0.0.0.0 --port=10000
     envVars:

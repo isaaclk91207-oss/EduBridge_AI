@@ -7,7 +7,7 @@ import sys
 import os
 
 # Add the current directory to Python path
-sys.path.insert(0, os.path.join(os.getcwd(), '..'))
+sys.path.insert(0, os.path.join(os.getcwd(), 'app'))
 
 # Get frontend URL from environment (for production) or use localhost (for dev)
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")

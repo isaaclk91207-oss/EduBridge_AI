@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, Request
 
-from app.Schemas.schemas import ForgotPasswordRequest, UserLogin, UserRegister
-from app.core.db_utility import get_async_session
-from app.services.authentication_service import (
+from Schemas.schemas import ForgotPasswordRequest, UserLogin, UserRegister
+from core.db_utility import get_async_session
+from services.authentication_service import (
     forgot_password,
     login_user as login_user_service,
     logout_user as logout_user_service,
@@ -35,7 +35,7 @@ async def logout(request: Request):
 @router.get("/login")
 async def check_auth(request: Request):
     """Check if user is authenticated - returns current user if token is valid"""
-    from backend.app.services.jwt_service import decode_token
+    from app.services.jwt_service import decode_token
     
     # Try to get token from cookie or header
     token = request.cookies.get("access_token")

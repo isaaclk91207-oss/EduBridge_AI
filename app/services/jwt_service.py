@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from jose import jwt, JWTError, ExpiredSignatureError
 from datetime import datetime, timedelta
-from app.core.config import settings
+from core.config import settings
 from starlette import status
 
 async def generate_access_token(data: dict) -> str:

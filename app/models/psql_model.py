@@ -5,7 +5,7 @@ from typing import Optional, List
 from sqlalchemy import String, DateTime, Column, func, Boolean, Index, Integer, Text, Numeric, JSON, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB
 from sqlalchemy.orm import relationship, declarative_base
-from app.core.supabase_initialize import Base
+from core.supabase_initialize import Base
 
 
 # =============================================================================

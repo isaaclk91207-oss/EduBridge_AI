@@ -3,7 +3,7 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.supabase_initialize import async_engine, async_session, Base
+from core.supabase_initialize import async_engine, async_session, Base
 
 async def get_async_session() -> AsyncGenerator[AsyncSession,None]:
     async_session_local = async_session
