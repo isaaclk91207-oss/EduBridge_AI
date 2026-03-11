@@ -95,19 +95,67 @@ function AuthForm() {
     if (!validateSignUp()) return;
     
     setIsLoading(true);
-    const result = await signup({
-      email: signUpData.email,
-      password: signUpData.password,
-      name: signUpData.name,
-      studentType: signUpData.studentType,
-      major: signUpData.major
-    });
-    setIsLoading(false);
     
-    if (result.success) {
-      router.push(redirect);
-    } else {
-      setError(result.error || 'Signup failed');
+    try {
+      // Call the signup API directly to get the token immediately
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edu-bridge-ai-backend.vercel.app';
+      const res = await fetch(`${apiUrl}/authentication/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: signUpData.email,
+          password: signUpData.password,
+          username: signUpData.name,
+          full_name: signUpData.name,
+          student_type: signUpData.studentType,
+          major: signUpData.major
+        }),
+        credentials: 'include'
+      });
+      
+      const response = await res.json();
+      console.log('Signup response:', response);
+      
+      if (res.ok && response.access_token) {
+        // IMMEDIATELY save token to localStorage before anything else
+        localStorage.setItem('access_token', response.access_token);
+        console.log('Token saved to localStorage immediately after signup');
+        
+        // Also save to cookie for middleware
+        const expires = new Date();
+        expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000);
+        document.cookie = `access_token=${response.access_token};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+        
+        // Now call the signup function to update auth context
+        await signup({
+          email: signUpData.email,
+          password: signUpData.password,
+          name: signUpData.name,
+          studentType: signUpData.studentType,
+          major: signUpData.major
+        });
+        
+        // Redirect to dashboard
+        router.push(redirect);
+      } else {
+        // Handle error
+        let errorMessage = 'Signup failed';
+        if (response.detail) {
+          if (Array.isArray(response.detail)) {
+            errorMessage = response.detail.map((err: any) => err.msg || err.message || JSON.stringify(err)).join(', ');
+          } else if (typeof response.detail === 'object') {
+            errorMessage = response.detail.msg || response.detail.message || JSON.stringify(response.detail);
+          } else {
+            errorMessage = response.detail;
+          }
+        }
+        setError(errorMessage);
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      setError('Signup failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
