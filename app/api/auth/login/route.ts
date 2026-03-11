@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// FastAPI backend URL
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edu-bridge-ai-backend.vercel.app';
+// Use centralized API URL from environment variable
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,6 +16,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('Login API - Calling backend:', `${API_URL}/authentication/login`);
+
     // Forward login request to FastAPI backend
     const response = await fetch(`${API_URL}/authentication/login`, {
       method: 'POST',
@@ -25,6 +27,8 @@ export async function POST(request: NextRequest) {
       credentials: 'include',
       body: JSON.stringify({ email, password })
     });
+
+    console.log('Login API - Backend response status:', response.status);
 
     if (!response.ok) {
       const error = await response.json();
@@ -46,11 +50,13 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
+    console.log('Login API - Backend response data keys:', Object.keys(data));
 
     // Forward the Set-Cookie header from FastAPI to the client
     const setCookieHeader = response.headers.get('set-cookie');
     const nextResponse = NextResponse.json({
       success: true,
+      access_token: data.access_token, // Include token in response body
       user: data.user
     });
 

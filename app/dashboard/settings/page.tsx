@@ -37,9 +37,24 @@ export default function Settings() {
   useEffect(() => {
     async function fetchProfile() {
       try {
+        // Get token from localStorage
+        const token = localStorage.getItem('access_token');
+        
+        // Build headers with token if available
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json'
+        };
+        
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
         const res = await fetch('/api/user/profile', {
+          headers,
           credentials: 'include'
         });
+        
+        console.log('Settings - Profile fetch status:', res.status);
         
         if (res.ok) {
           const data = await res.json();
@@ -54,6 +69,9 @@ export default function Settings() {
           if (data.id) {
             setUserId(data.id);
           }
+        } else {
+          console.error('Failed to fetch profile, status:', res.status);
+          // Don't set loading to false with error - just continue
         }
       } catch (error) {
         console.error('Failed to fetch profile:', error);

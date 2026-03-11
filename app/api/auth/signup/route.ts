@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// FastAPI backend URL
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edu-bridge-ai-backend.vercel.app';
+// Use centralized API URL from environment variable
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
         email, 
         password, 
         username: name,
+        full_name: name,
         student_type: studentType || 'public',
         major: major || ''
       })
