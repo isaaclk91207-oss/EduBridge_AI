@@ -48,17 +48,14 @@ def get_database_url() -> str:
     db_url = settings.DATABASE_URL or settings.SQLALCHEMY_DATABASE_URI
     
     if not db_url:
-        raise ValueError(
-            "DATABASE_URL environment variable is not set. "
-            "Please configure DATABASE_URL in your environment variables. "
-            "For Neon PostgreSQL, use: postgresql://user:password@host.neon.tech/db?sslmode=require"
-        )
+        # Return empty string instead of raising error - app will work without DB
+        print("WARNING: DATABASE_URL not set. Database features will be disabled.")
+        return ""
     
     # Check for SQLite - not supported on production
     if "sqlite" in db_url.lower():
-        raise ValueError(
-            "SQLite is not supported in production. Please use PostgreSQL."
-        )
+        print("WARNING: SQLite is not supported in production. Please use PostgreSQL.")
+        return ""
     
     return db_url
 
