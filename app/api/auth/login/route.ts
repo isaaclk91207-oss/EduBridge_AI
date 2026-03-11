@@ -16,16 +16,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Login API - Calling backend:', `${API_URL}/authentication/login`);
+    // CRITICAL: Log the URL being called for debugging
+    // Always include fallback to ensure the URL is never undefined
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
+    console.log('NEXT_PUBLIC_API_URL env:', process.env.NEXT_PUBLIC_API_URL);
+    console.log('Full login URL:', `${API_URL}/authentication/login`);
 
-    // Forward login request to FastAPI backend
+    // Forward login request to FastAPI backend with JSON data
+    // Backend expects JSON with email field (not username)
     const response = await fetch(`${API_URL}/authentication/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       credentials: 'include',
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({
+        email: email,
+        password: password
+      })
     });
 
     console.log('Login API - Backend response status:', response.status);
