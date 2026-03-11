@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { buildApiUrl, API_ENDPOINTS } from './api';
 
 interface User {
   id: string;
@@ -27,7 +28,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch('/api/auth/login', {
+      // Use the API URL helper to hit the backend
+      const url = buildApiUrl(API_ENDPOINTS.ME || '/api/auth/me');
+      const res = await fetch(url, {
         method: 'GET',
         credentials: 'include'
       });
@@ -52,24 +55,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const res = await fetch('/api/auth/login', {
+      const url = buildApiUrl(API_ENDPOINTS.LOGIN);
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username: email, password }),  // OAuth2 expects username/password
         credentials: 'include'
       });
       
       const data = await res.json();
       
-      if (data.success) {
+      if (data.access_token) {
         setUser({
-          id: data.user.id,
-          email: data.user.email,
-          name: data.user.username || data.user.name
+          id: data.user?.id || '1',
+          email: email,
+          name: data.user?.username || email.split('@')[0]
         });
         return { success: true };
       } else {
-        return { success: false, error: data.error };
+        return { success: false, error: data.detail || 'Login failed' };
       }
     } catch (error) {
       console.error('Login failed:', error);
@@ -79,24 +83,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signup = async (data: { email: string; password: string; name: string; studentType?: string; major?: string }) => {
     try {
-      const res = await fetch('/api/auth/signup', {
+      // Use buildApiUrl to ensure we're hitting the backend
+      const url = buildApiUrl('/api/auth/register');
+      console.log('Signup URL:', url);
+      
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          username: data.name,
+          full_name: data.name
+        }),
         credentials: 'include'
       });
       
       const response = await res.json();
+      console.log('Signup response:', response);
       
-      if (response.success) {
+      if (res.ok) {
         setUser({
-          id: response.user.id,
-          email: response.user.email,
-          name: response.user.username || response.user.name
+          id: response.id || '1',
+          email: response.email,
+          name: response.username || response.full_name || data.name
         });
         return { success: true };
       } else {
-        return { success: false, error: response.error };
+        return { success: false, error: response.detail || 'Signup failed' };
       }
     } catch (error) {
       console.error('Signup failed:', error);
@@ -106,7 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', {
+      const url = buildApiUrl(API_ENDPOINTS.LOGOUT);
+      await fetch(url, {
         method: 'POST',
         credentials: 'include'
       });

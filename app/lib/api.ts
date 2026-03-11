@@ -2,56 +2,40 @@
  * Centralized API configuration for the EduBridge frontend
  * 
  * This utility provides a consistent way to access the FastAPI backend URL
- * across the entire application. It uses environment variables with a fallback
- * to the production Render backend.
+ * across the entire application. The backend is deployed on Render.
  * 
  * Usage:
- *   import { getApiUrl, API_ENDPOINTS } from '@/lib/api';
+ *   import { buildApiUrl, API_ENDPOINTS } from '@/lib/api';
  *   
  *   // Get full URL for an endpoint
- *   const url = getApiUrl('/auth/login');
- *   
- *   // Or use predefined endpoints
- *   const url = getApiUrl(API_ENDPOINTS.LOGIN);
+ *   const url = buildApiUrl('/api/auth/register');
  */
 
-// Default to production URL - this is the Render deployed backend
-const DEFAULT_API_URL = 'https://edubridge-ai-ui2j.onrender.com';
-
-/**
- * Get the API base URL
- * Uses NEXT_PUBLIC_API_URL env variable if set, otherwise falls back to default
- */
-export function getApiUrl(): string {
-  if (typeof window !== 'undefined') {
-    // Client-side
-    return process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL;
-  }
-  // Server-side
-  return process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL;
-}
+// Hardcoded backend URL - this is your Render backend
+const BACKEND_URL = 'https://edubridge-ai-ui2j.onrender.com';
 
 /**
  * Build a full URL for an API endpoint
- * @param endpoint - The API endpoint path (e.g., '/auth/login')
+ * @param endpoint - The API endpoint path (e.g., '/api/auth/register')
  * @returns Full URL to the API endpoint
  */
 export function buildApiUrl(endpoint: string): string {
-  const baseUrl = getApiUrl();
   // Remove leading slash from endpoint if present to avoid double slashes
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-  return `${baseUrl}/${cleanEndpoint}`;
+  const fullUrl = `${BACKEND_URL}/${cleanEndpoint}`;
+  console.log('API URL:', fullUrl); // Debug log
+  return fullUrl;
 }
 
 /**
  * Predefined API endpoints for consistent usage across the app
- * Note: These match the backend routes in the new FastAPI structure
+ * Note: These match the backend routes in the FastAPI structure
  */
 export const API_ENDPOINTS = {
   // Authentication - matches /api/auth/* routes
   LOGIN: '/api/auth/login',
   LOGOUT: '/api/auth/logout',
-  SIGNUP: '/api/auth/register',
+  REGISTER: '/api/auth/register',
   ME: '/api/auth/me',
   
   // User endpoints - matches /api/users/* routes
@@ -89,8 +73,13 @@ export function getEndpointUrl(endpointKey: ApiEndpointKey): string {
   return buildApiUrl(API_ENDPOINTS[endpointKey]);
 }
 
-// Re-export buildApiUrl as getApiUrl for backward compatibility
-// Note: The main export is the function getApiUrl defined above
+/**
+ * Get the API base URL
+ * @returns The backend URL
+ */
+export function getApiUrl(): string {
+  return BACKEND_URL;
+}
 
-export default getApiUrl;
+export default buildApiUrl;
 

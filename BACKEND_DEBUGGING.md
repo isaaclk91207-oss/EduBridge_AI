@@ -11,6 +11,7 @@ This error means your **frontend is receiving HTML instead of JSON**. The "T" li
 1. **Backend crashed on startup** - Missing environment variable like `DATABASE_URL`
 2. **Backend is still deploying** - Render is rebuilding the service
 3. **Backend returned an error page** - Any 500 error that returns HTML instead of JSON
+4. **Frontend calling wrong URL** - Requests going to Vercel instead of Render
 
 ## How to Debug in Browser
 
@@ -35,34 +36,35 @@ If you see HTML content starting with:
 
 ## What I Fixed
 
-I've updated the backend to **gracefully handle missing DATABASE_URL**:
+I've updated the frontend to use direct URLs to the Render backend:
 
-1. **config.py** - Now returns empty string instead of raising error
-2. **database.py** - Now skips database initialization if no URL provided
-3. **render.yaml** - Added SUPABASE_URL and SUPABASE_KEY environment variables
+### 1. app/lib/api.ts
+- Changed to use **hardcoded backend URL**: `https://edubridge-ai-ui2j.onrender.com`
+- Added `buildApiUrl()` function that always returns the full URL
+- Fixed endpoints to match backend: `/api/auth/register` (not `/api/auth/signup`)
 
-## Immediate Steps
+### 2. app/lib/auth.tsx  
+- Updated all fetch calls to use `buildApiUrl(API_ENDPOINTS.LOGIN)` etc.
+- Added console.log to debug the actual URL being called
 
-1. **Push changes to Git** - The `backend/` folder is now ready
-2. **Redeploy on Render** - Trigger a new deployment
-3. **Check Render Logs** - Look for startup messages:
-   - "WARNING: DATABASE_URL not set" (expected if not configured)
-   - "Database not configured - skipping table creation" (expected if no DB)
-   - "Application initialized successfully" (you want to see this)
+### 3. next.config.ts
+- Added rewrites to proxy `/api/*` requests to the Render backend
 
-4. **Test the backend directly** - Before testing frontend, test with curl:
-   ```bash
-   curl https://your-backend-url.onrender.com/
-   # Should return: {"status": "ok", "message": "EduBridge AI API is running"}
-   
-   curl https://your-backend-url.onrender.com/health
-   # Should return: {"status": "healthy"}
-   ```
+## Setting NEXT_PUBLIC_API_URL in Vercel (Optional)
+
+If you want to use environment variables instead of hardcoded URLs:
+
+1. Go to **Vercel Dashboard** → Your Project → **Settings** → **Environment Variables**
+2. Add a new variable:
+   - **Name**: `NEXT_PUBLIC_API_URL`
+   - **Value**: `https://edubridge-ai-ui2j.onrender.com`
+3. **Important**: Add the same variable for all environments (Production, Preview, Development)
+4. Redeploy your Vercel project
 
 ## Quick Checklist
 
-- [ ] Is backend deployed to Render?
-- [ ] Check Render logs for startup errors
-- [ ] Test backend URL directly with curl before testing frontend
-- [ ] Make sure CORS is configured (already in main.py)
+- [ ] Check browser console - do you see the correct URL being logged?
+- [ ] Check Network tab - is the request going to `edubridge-ai-ui2j.onrender.com`?
+- [ ] Test backend directly: `curl https://edubridge-ai-ui2j.onrender.com/`
+- [ ] Check Render logs for backend errors
 
