@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// Demo token constant - must match the one in auth.tsx
+const DEMO_TOKEN = 'DEMO_TOKEN_12345';
+
 // Routes that require authentication
 const protectedRoutes = [
   '/dashboard',
@@ -18,25 +21,32 @@ const protectedRoutes = [
 ];
 
 // Routes that should redirect to dashboard if already authenticated
-const authRoutes = ['/signup', '/auth', '/auth/'];
+const authRoutes = ['/signup', '/auth', '/signin'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check for auth token - check multiple cookie names (access_token is set by FastAPI)
-  const token = request.cookies.get('access_token')?.value || request.cookies.get('auth-token')?.value;
+  // Check for auth token - check cookie
+  const token = request.cookies.get('access_token')?.value;
   
-  // Simple token verification - JWT payload has "sub" field
+  // Simple check: is authenticated if there's a token (real or demo)
   let isAuthenticated = false;
   if (token) {
-    try {
-      const parts = token.split('.');
-      if (parts.length === 3) {
-        const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
-        isAuthenticated = !!payload.sub;
+    // Accept both real JWT tokens and demo token
+    if (token === DEMO_TOKEN) {
+      isAuthenticated = true;
+      console.log('[Middleware] Demo token detected, allowing access');
+    } else {
+      // For real tokens, try to parse JWT payload (has "sub" field)
+      try {
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+          isAuthenticated = !!payload.sub;
+        }
+      } catch {
+        isAuthenticated = false;
       }
-    } catch {
-      isAuthenticated = false;
     }
   }
 
@@ -48,7 +58,7 @@ export function middleware(request: NextRequest) {
 
   // Redirect to signin if accessing protected route without auth
   if (isProtectedRoute && !isAuthenticated) {
-    const signInUrl = new URL('/signin', request.url);
+    const signInUrl = new URL('/auth', request.url);
     signInUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(signInUrl);
   }
@@ -67,7 +77,6 @@ export const config = {
     '/signin',
     '/signup',
     '/auth',
-    // Don't match API routes - let them handle their own auth
-    '/api/auth/:path*',
   ],
 };
+

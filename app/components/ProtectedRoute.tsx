@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+// Demo token constant - must match the one in auth.tsx
+const DEMO_TOKEN = 'DEMO_TOKEN_12345';
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
@@ -30,7 +33,8 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
       console.log('ProtectedRoute - Token check:', { 
         hasToken, 
         hasLocalToken: !!localToken, 
-        hasCookieToken: !!cookieToken 
+        hasCookieToken: !!cookieToken,
+        isDemoToken: localToken === DEMO_TOKEN || cookieToken === DEMO_TOKEN
       });
 
       if (hasToken) {

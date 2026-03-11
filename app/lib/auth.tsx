@@ -2,7 +2,16 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { buildApiUrl, API_ENDPOINTS } from './api';
+
+// Demo token constant - must match the one in middleware.ts
+export const DEMO_TOKEN = 'DEMO_TOKEN_12345';
+
+// Demo user data
+export const DEMO_USER: User = {
+  id: 'demo-user-001',
+  email: 'demo@edubridge.ai',
+  name: 'Demo User'
+};
 
 interface User {
   id: string;
@@ -17,11 +26,13 @@ interface AuthContextType {
   signup: (data: { email: string; password: string; name: string; studentType?: string; major?: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  handleDemoLogin: () => Promise<void>;
+  isDemoUser: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Helper to set cookie (for middleware to read)
+// Helper to set cookie
 function setCookie(name: string, value: string, days: number = 7) {
   const expires = new Date();
   expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
@@ -30,13 +41,9 @@ function setCookie(name: string, value: string, days: number = 7) {
 
 // Helper to get cookie
 function getCookie(name: string): string | null {
-  // First check localStorage for backup token
   if (name === 'access_token') {
     const localToken = localStorage.getItem('access_token');
-    if (localToken) {
-      console.log('getCookie: Found token in localStorage');
-      return localToken;
-    }
+    if (localToken) return localToken;
   }
   
   const value = `; ${document.cookie}`;
@@ -48,7 +55,6 @@ function getCookie(name: string): string | null {
 // Helper to delete cookie
 function deleteCookie(name: string) {
   document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
-  // Also clear from localStorage if it's the access_token
   if (name === 'access_token' && typeof window !== 'undefined') {
     localStorage.removeItem('access_token');
   }
@@ -59,39 +65,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const checkAuth = async () => {
-    // Prevent multiple simultaneous checks
-    if (!loading) {
-      // Already checked, skip
+  // Check if current user is a demo user
+  const isDemoUser = (): boolean => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('access_token') || getCookie('access_token');
+      return token === DEMO_TOKEN;
+    }
+    return false;
+  };
+
+  // Demo login handler - bypasses backend authentication
+  const handleDemoLogin = async (): Promise<void> => {
+    console.log('[Demo Login] Setting demo token');
+    
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('access_token', DEMO_TOKEN);
     }
     
+    setCookie('access_token', DEMO_TOKEN, 7);
+    setUser(DEMO_USER);
+    
+    console.log('[Demo Login] User set to demo user, redirecting to /dashboard');
+    router.push('/dashboard');
+  };
+
+  const checkAuth = async () => {
     try {
-      // First check if we have a token in localStorage (client-side backup)
       let token = null;
       
       if (typeof window !== 'undefined') {
         token = localStorage.getItem('access_token');
-        console.log('checkAuth - Token from localStorage:', token ? 'exists' : 'none');
       }
       
-      // Also check cookie for server-set token
       if (!token) {
         token = getCookie('access_token');
-        console.log('checkAuth - Token from cookie:', token ? 'exists' : 'none');
       }
       
       if (!token) {
-        console.log('checkAuth - No token found, user not authenticated');
         setUser(null);
         setLoading(false);
         return;
       }
 
-      // Use Next.js API route instead of external backend to avoid CORS issues
-      // The API route will proxy to the backend with proper credentials
+      // SPECIAL HANDLING FOR DEMO TOKEN - Skip backend call entirely!
+      if (token === DEMO_TOKEN) {
+        console.log('[checkAuth] Demo token detected, bypassing backend');
+        setUser(DEMO_USER);
+        setLoading(false);
+        return;
+      }
+
+      // For real tokens, call the backend
       const url = '/api/auth/me';
-      console.log('checkAuth - Calling:', url);
-      
       const res = await fetch(url, {
         method: 'GET',
         headers: {
@@ -100,13 +125,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: 'include'
       });
       
-      console.log('checkAuth - /me response status:', res.status);
-      
       if (res.ok) {
         const data = await res.json();
-        console.log('checkAuth - /me response data:', data);
-        
-        // Check if the user is authenticated based on the response
         if (data.authenticated) {
           setUser({
             id: data.id || data.user_id || '1',
@@ -114,58 +134,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: data.username || data.full_name || data.email?.split('@')[0] || 'User'
           });
         } else {
-          // Token invalid, clear it
           deleteCookie('access_token');
           setUser(null);
         }
       } else {
-        // Token invalid, clear it
         deleteCookie('access_token');
         setUser(null);
       }
     } catch (error) {
-      console.error('Auth check failed:', error);
+      console.error('[checkAuth] Auth check failed:', error);
       setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
+  // Simplified login - can still be used for real auth if needed
   const login = async (email: string, password: string) => {
     try {
-      // Call external backend directly with proper JSON format
       const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
       const url = `${backendUrl}/api/auth/login`;
-      console.log('Login URL:', url);
-      
-      // Send JSON data to the backend
-      console.log('Login email:', email);
-      console.log('Login password length:', password.length);
       
       const res = await fetch(url, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
         credentials: 'include'
       });
       
       const data = await res.json();
-      console.log('Login response:', data);
-      console.log('Login response type:', typeof data);
-      console.log('Login response keys:', Object.keys(data));
       
       if (data.access_token) {
-        // Save token to cookie for middleware to read
         setCookie('access_token', data.access_token, 7);
-        // Also save to localStorage as backup
         if (typeof window !== 'undefined') {
           localStorage.setItem('access_token', data.access_token);
-          console.log('Login: Token saved to localStorage');
         }
         
         setUser({
@@ -175,49 +177,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         return { success: true };
       } else {
-        // Handle Pydantic validation error or other error formats
-        let errorMessage = 'Login failed';
-        
-        if (data.detail) {
-          // FastAPI error format - could be string or array
-          if (Array.isArray(data.detail)) {
-            // Pydantic validation error array
-            errorMessage = data.detail.map((err: any) => {
-              console.log('Validation error object:', err);
-              return err.msg || err.message || JSON.stringify(err);
-            }).join(', ');
-          } else if (typeof data.detail === 'object') {
-            // Object format error
-            errorMessage = data.detail.msg || data.detail.message || JSON.stringify(data.detail);
-          } else {
-            // String format
-            errorMessage = data.detail;
-          }
-        } else if (data.error) {
-          // Custom error message from our API route
-          errorMessage = data.error;
-        }
-        
-        console.log('Parsed error message:', errorMessage);
-        return { success: false, error: errorMessage };
+        const errorMessage = data.detail || data.error || 'Login failed';
+        return { success: false, error: typeof errorMessage === 'string' ? errorMessage : 'Login failed' };
       }
     } catch (error) {
-      console.error('Login failed - caught error:', error);
-      console.error('Error type:', typeof error);
-      // Log error details safely
-      if (error && typeof error === 'object') {
-        console.error('Error keys:', Object.keys(error as object));
-      }
+      console.error('[Login] Error:', error);
       return { success: false, error: 'Login failed. Please try again.' };
     }
   };
 
+  // Simplified signup
   const signup = async (data: { email: string; password: string; name: string; studentType?: string; major?: string }) => {
     try {
-      // Call external backend directly with proper JSON format
       const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
       const url = `${backendUrl}/api/auth/register`;
-      console.log('Signup URL:', url);
       
       const res = await fetch(url, {
         method: 'POST',
@@ -234,23 +207,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       const response = await res.json();
-      console.log('Signup response:', response);
-      console.log('Signup response type:', typeof response);
-      console.log('Signup response keys:', Object.keys(response));
-      console.log('Signup response.ok:', res.ok);
       
-      // Check for success - could be either res.ok or success: true in body
       if (res.ok || response.success) {
-        // Save token to both cookie and localStorage
-        // The cookie is for middleware/server-side, localStorage is for client-side backup
         const token = response.access_token || response.accessToken;
         if (token) {
-          // Save to cookie for middleware to read
           setCookie('access_token', token, 7);
-          // Also save to localStorage as backup
           if (typeof window !== 'undefined') {
             localStorage.setItem('access_token', token);
-            console.log('Signup: Token saved to localStorage');
           }
         }
         
@@ -261,59 +224,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         return { success: true };
       } else {
-        // Handle Pydantic validation error or other error formats
-        let errorMessage = 'Signup failed';
-        
-        if (response.detail) {
-          // FastAPI error format - could be string or array
-          if (Array.isArray(response.detail)) {
-            // Pydantic validation error array
-            errorMessage = response.detail.map((err: any) => {
-              console.log('Signup validation error object:', err);
-              // err has: {type, loc, msg, input}
-              return err.msg || err.message || JSON.stringify(err);
-            }).join(', ');
-          } else if (typeof response.detail === 'object') {
-            // Object format error - could have msg field
-            errorMessage = response.detail.msg || response.detail.message || JSON.stringify(response.detail);
-          } else {
-            // String format
-            errorMessage = response.detail;
-          }
-        } else if (response.message) {
-          errorMessage = response.message;
-        } else if (response.error) {
-          errorMessage = response.error;
-        }
-        
-        console.log('Parsed signup error message:', errorMessage);
-        return { success: false, error: errorMessage };
+        const errorMessage = response.detail || response.message || response.error || 'Signup failed';
+        return { success: false, error: typeof errorMessage === 'string' ? errorMessage : 'Signup failed' };
       }
     } catch (error) {
-      console.error('Signup failed - caught error:', error);
-      console.error('Signup error type:', typeof error);
-      if (error && typeof error === 'object') {
-        console.error('Signup error keys:', Object.keys(error as object));
-      }
+      console.error('[Signup] Error:', error);
       return { success: false, error: 'Signup failed. Please try again.' };
     }
   };
 
   const logout = async () => {
     try {
-      // Use Next.js API route instead of external backend directly
-      const url = '/api/auth/logout';
-      await fetch(url, {
+      await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include'
       });
     } catch (error) {
-      console.error('Logout API call failed:', error);
+      console.error('[Logout] API call failed:', error);
     } finally {
-      // Always clear local state regardless of API call result
       deleteCookie('access_token');
       setUser(null);
-      router.push('/signin');
+      router.push('/auth');
     }
   };
 
@@ -322,7 +253,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, checkAuth }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout, checkAuth, handleDemoLogin, isDemoUser }}>
       {children}
     </AuthContext.Provider>
   );
@@ -335,3 +266,4 @@ export function useAuth() {
   }
   return context;
 }
+

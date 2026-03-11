@@ -18,7 +18,7 @@ function AuthForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/dashboard';
-  const { login, signup, user, loading } = useAuth();
+  const { login, signup, user, loading, handleDemoLogin } = useAuth();
 
   // Form states
   const [signInData, setSignInData] = useState({ email: '', password: '' });
@@ -402,6 +402,17 @@ function AuthForm() {
                     ) : (
                       'Sign In'
                     )}
+                  </motion.button>
+
+                  {/* Demo Login Button */}
+                  <motion.button
+                    type="button"
+                    onClick={handleDemoLogin}
+                    className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-lg transition-all shadow-lg shadow-amber-500/30"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    🚀 Demo Login (Skip Auth)
                   </motion.button>
                   
                 </motion.form>
