@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, Sparkles, GraduationCap, Briefcase, BookOpen } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+import { buildApiUrl } from '@/lib/api';
 
 function AuthForm() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -97,9 +98,11 @@ function AuthForm() {
     setIsLoading(true);
     
     try {
-      // Call the signup API directly to get the token immediately
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edu-bridge-ai-backend.vercel.app';
-      const res = await fetch(`${apiUrl}/authentication/register`, {
+      // Use centralized API function to get the backend URL
+      const registerUrl = buildApiUrl('/api/auth/register');
+      console.log('Signup URL:', registerUrl);
+      
+      const res = await fetch(registerUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -114,6 +117,7 @@ function AuthForm() {
       });
       
       const response = await res.json();
+      console.log('Signup response status:', res.status);
       console.log('Signup response:', response);
       
       if (res.ok && response.access_token) {
@@ -138,22 +142,43 @@ function AuthForm() {
         // Redirect to dashboard
         router.push(redirect);
       } else {
-        // Handle error
-        let errorMessage = 'Signup failed';
+        // Handle error - extract message from response
+        let errorMessage = 'Signup failed. Please try again.';
+        
         if (response.detail) {
           if (Array.isArray(response.detail)) {
-            errorMessage = response.detail.map((err: any) => err.msg || err.message || JSON.stringify(err)).join(', ');
+            // FastAPI validation error array
+            errorMessage = response.detail.map((err: any) => {
+              console.log('Validation error:', err);
+              return err.msg || err.message || JSON.stringify(err);
+            }).join(', ');
           } else if (typeof response.detail === 'object') {
             errorMessage = response.detail.msg || response.detail.message || JSON.stringify(response.detail);
           } else {
             errorMessage = response.detail;
           }
+        } else if (response.message) {
+          errorMessage = response.message;
         }
+        
+        console.log('Signup error message:', errorMessage);
         setError(errorMessage);
       }
     } catch (error) {
-      console.error('Signup error:', error);
-      setError('Signup failed. Please try again.');
+      // Robust error handling - captures ALL errors
+      console.error('=== SIGNUP ERROR ===');
+      console.error('Error type:', typeof error);
+      console.error('Error:', error);
+      
+      if (error && typeof error === 'object') {
+        console.error('Error keys:', Object.keys(error));
+        // Check for network errors
+        if ('message' in error) {
+          console.error('Error message:', (error as any).message);
+        }
+      }
+      
+      setError('Unable to connect to server. Please check your internet connection and try again.');
     } finally {
       setIsLoading(false);
     }

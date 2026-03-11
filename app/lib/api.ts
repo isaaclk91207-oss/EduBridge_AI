@@ -11,8 +11,8 @@
  *   const url = buildApiUrl('/api/auth/register');
  */
 
-// Hardcoded backend URL - this is your Render backend
-const BACKEND_URL = 'https://edubridge-ai-ui2j.onrender.com';
+// Use environment variable with fallback to hardcoded URL for development
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
 
 /**
  * Build a full URL for an API endpoint
@@ -25,6 +25,14 @@ export function buildApiUrl(endpoint: string): string {
   const fullUrl = `${BACKEND_URL}/${cleanEndpoint}`;
   console.log('API URL:', fullUrl); // Debug log
   return fullUrl;
+}
+
+/**
+ * Get the raw backend URL
+ * @returns The backend URL
+ */
+export function getBackendUrl(): string {
+  return BACKEND_URL;
 }
 
 /**
