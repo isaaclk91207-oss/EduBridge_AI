@@ -4,8 +4,8 @@ services:
     env: python
     region: oregon
     rootDir: app
-    buildCommand: pip install --no-cache-dir -r app/requirements.txt
-    startCommand: uvicorn app.app --host 0.0.0.0 --port=10000
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port=10000
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.0"

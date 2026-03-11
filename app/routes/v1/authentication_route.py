@@ -35,7 +35,7 @@ async def logout(request: Request):
 @router.get("/login")
 async def check_auth(request: Request):
     """Check if user is authenticated - returns current user if token is valid"""
-    from app.services.jwt_service import decode_token
+    from services.jwt_service import decode_token
     
     # Try to get token from cookie or header
     token = request.cookies.get("access_token")
