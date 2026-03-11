@@ -133,25 +133,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const url = buildApiUrl(API_ENDPOINTS.LOGIN);
+      // Use Next.js API route instead of external backend directly
+      // The API route will proxy to the backend with proper format
+      const url = '/api/auth/login';
       console.log('Login URL:', url);
       
-      // OAuth2PasswordRequestForm expects form data, NOT JSON
-      // It expects: username=...&password=...
-      const formBody = new URLSearchParams();
-      formBody.append('username', email);
-      formBody.append('password', password);
-      
-      console.log('Login form body (URLSearchParams):', formBody.toString());
+      // Send JSON data to the Next.js API route (which proxies to backend)
       console.log('Login email:', email);
       console.log('Login password length:', password.length);
       
       const res = await fetch(url, {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
         },
-        body: formBody.toString(),
+        body: JSON.stringify({
+          email: email,
+          password: password
+        }),
         credentials: 'include'
       });
       
@@ -194,6 +193,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // String format
             errorMessage = data.detail;
           }
+        } else if (data.error) {
+          // Custom error message from our API route
+          errorMessage = data.error;
         }
         
         console.log('Parsed error message:', errorMessage);
@@ -212,7 +214,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signup = async (data: { email: string; password: string; name: string; studentType?: string; major?: string }) => {
     try {
-      const url = buildApiUrl('/api/auth/register');
+      // Use Next.js API route instead of external backend directly
+      const url = '/api/auth/register';
       console.log('Signup URL:', url);
       
       const res = await fetch(url, {
@@ -222,7 +225,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: data.email,
           password: data.password,
           username: data.name,
-          full_name: data.name
+          full_name: data.name,
+          student_type: data.studentType || 'public',
+          major: data.major || ''
         }),
         credentials: 'include'
       });
@@ -288,7 +293,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      const url = buildApiUrl(API_ENDPOINTS.LOGOUT);
+      // Use Next.js API route instead of external backend directly
+      const url = '/api/auth/logout';
       await fetch(url, {
         method: 'POST',
         credentials: 'include'
