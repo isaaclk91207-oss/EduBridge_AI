@@ -30,6 +30,15 @@ function setCookie(name: string, value: string, days: number = 7) {
 
 // Helper to get cookie
 function getCookie(name: string): string | null {
+  // First check localStorage for backup token
+  if (name === 'access_token') {
+    const localToken = localStorage.getItem('access_token');
+    if (localToken) {
+      console.log('getCookie: Found token in localStorage');
+      return localToken;
+    }
+  }
+  
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
@@ -39,6 +48,10 @@ function getCookie(name: string): string | null {
 // Helper to delete cookie
 function deleteCookie(name: string) {
   document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
+  // Also clear from localStorage if it's the access_token
+  if (name === 'access_token' && typeof window !== 'undefined') {
+    localStorage.removeItem('access_token');
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -124,6 +137,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.access_token) {
         // Save token to cookie for middleware to read
         setCookie('access_token', data.access_token, 7);
+        // Also save to localStorage as backup
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('access_token', data.access_token);
+          console.log('Login: Token saved to localStorage');
+        }
         
         setUser({
           id: '1',
@@ -189,10 +207,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('Signup response keys:', Object.keys(response));
       
       if (res.ok) {
-        // For signup, we might need to login after registration
-        // Or the backend might return a token directly
+        // Save token to both cookie and localStorage
+        // The cookie is for middleware/server-side, localStorage is for client-side backup
         if (response.access_token) {
+          // Save to cookie for middleware to read
           setCookie('access_token', response.access_token, 7);
+          // Also save to localStorage as backup
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('access_token', response.access_token);
+            console.log('Signup: Token saved to localStorage');
+          }
         }
         
         setUser({

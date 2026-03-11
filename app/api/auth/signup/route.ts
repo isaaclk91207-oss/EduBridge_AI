@@ -80,7 +80,10 @@ export async function POST(request: NextRequest) {
     const setCookieHeader = response.headers.get('set-cookie');
     const nextResponse = NextResponse.json({
       success: true,
-      user: data.user
+      message: data.message || 'User created successfully',
+      user: data.user,
+      access_token: data.access_token, // Include token in body for client-side access
+      refresh_token: data.refresh_token
     });
 
     if (setCookieHeader) {
