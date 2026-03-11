@@ -87,14 +87,16 @@ export default function AISupportChat() {
 
   // Get the appropriate endpoint based on chat mode
   const getEndpoint = () => {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edu-bridge-ai-backend.vercel.app';
+    // Use the correct Render backend URL
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
+    console.log('[AI Support] Using API URL:', API_URL);
     switch (chatMode) {
       case "cofounder":
         return `${API_URL}/chat/cofounder`;
       case "mentor":
         return `${API_URL}/chat/mentor`;
       default:
-        return `${API_URL}/api/chat`;
+        return `${API_URL}/chat/support`;
     }
   };
 

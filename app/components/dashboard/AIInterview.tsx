@@ -88,8 +88,12 @@ export default function AIInterview() {
 
     try {
       const userId = generateUserId();
+      // Use the correct Render backend URL
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
+      console.log('[AI Interview] Calling API at:', `${API_URL}/chat/mentor`);
+      
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://edu-bridge-ai-backend.vercel.app'}/chat/mentor`,
+        `${API_URL}/chat/mentor`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -100,8 +104,12 @@ export default function AIInterview() {
         }
       );
 
+      console.log('[AI Interview] Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error("Failed to get response");
+        const errorText = await response.text();
+        console.error('[AI Interview] Error response:', errorText);
+        throw new Error(`Failed to get response: ${response.status} - ${errorText}`);
       }
 
       // Read the streaming response

@@ -9,6 +9,8 @@
 - [x] 4. Fix AICareerPortfolio component to use correct API endpoint
 - [x] 5. Add beam of light effect to BusinessSimulation component
 - [x] 6. Fix backend/main.py - Remove non-existent agent_route import
+- [x] 7. Fix AIInterview.tsx - Correct API URL to Render backend
+- [x] 8. Fix AISupportChat.tsx - Correct API URL to Render backend
 
 ## Summary of All Changes
 
@@ -39,10 +41,14 @@
 - Removed import of non-existent `routes.v1.agent_route` 
 - The AI routes are handled by Next.js API routes (app/routes/v1/)
 
-### 5. Career Scanner Fix (AICareerPortfolio.tsx)
+### 5. Frontend API URL Fixes
+- **AIInterview.tsx**: Fixed wrong fallback URL from `edu-bridge-ai-backend.vercel.app` to `edubridge-ai-ui2j.onrender.com`
+- **AISupportChat.tsx**: Fixed wrong fallback URL and wrong endpoint from `/api/chat` to `/chat/support`
+
+### 6. Career Scanner Fix (AICareerPortfolio.tsx)
 - Fixed API endpoint to use correct endpoint
 
-### 6. Business Simulation (BusinessSimulation.tsx)
+### 7. Business Simulation (BusinessSimulation.tsx)
 - Added "beam of light" visual effect with cyan/blue gradients
 
 ## To Deploy:
