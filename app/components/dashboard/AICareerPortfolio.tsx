@@ -214,7 +214,10 @@ export default function AICareerPortfolio() {
 
   // NEW: Handle Start Scan - calls the /api/v1/scan endpoint
   const handleStartScan = async () => {
-    if (!userId) {
+    // Use nullish coalescing operator to fallback to demo user ID if userId is null/undefined
+    const effectiveUserId = userId ?? 'demo-user-12345';
+    
+    if (!effectiveUserId) {
       console.error('No user ID available');
       return;
     }
@@ -229,11 +232,11 @@ export default function AICareerPortfolio() {
 
     if (supabase) {
       try {
-        // Fetch user progress (learning history)
+        // Fetch user progress (learning history) - use effectiveUserId
         const { data: progressData } = await supabase
           .from('user_progress')
           .select('*')
-          .eq('user_id', userId);
+          .eq('user_id', effectiveUserId);
         
         if (progressData && progressData.length > 0) {
           learningHistory = progressData.map((p: any) => ({
@@ -243,11 +246,11 @@ export default function AICareerPortfolio() {
           }));
         }
 
-        // Fetch user skills from profile if available
+        // Fetch user skills from profile if available - use effectiveUserId
         const { data: profileData } = await supabase
           .from('profiles')
           .select('skills, interests')
-          .eq('id', userId)
+          .eq('id', effectiveUserId)
           .single();
         
         if (profileData) {
@@ -259,7 +262,7 @@ export default function AICareerPortfolio() {
       }
     }
 
-    // Call the new /api/v1/scan endpoint
+    // Call the new /api/v1/scan endpoint - use effectiveUserId in request body
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
       const response = await fetch(`${API_URL}/api/v1/scan`, {
@@ -269,7 +272,7 @@ export default function AICareerPortfolio() {
         },
         credentials: 'include',
         body: JSON.stringify({
-          user_id: userId,
+          user_id: effectiveUserId,
           skills: userSkills,
           learning_history: learningHistory,
           interests: interests,
@@ -307,7 +310,7 @@ export default function AICareerPortfolio() {
           setShowResults(true);
           
           // Save analysis to student_analyses table
-          saveAnalysisToDb(userId);
+          saveAnalysisToDb(effectiveUserId);
         }, 500);
       }
     }, 800);
