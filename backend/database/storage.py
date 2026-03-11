@@ -3,21 +3,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import os
-from google import genai
 from openai import AsyncOpenAI
 from googleapiclient.discovery import build
 from supabase import create_client, Client 
-
-# Check for required API keys
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    print("Warning: GEMINI_API_KEY is not set!")
-
-# Gemini Setup - only initialize if API key exists
-if GEMINI_API_KEY:
-    gemini_client = genai.Client(api_key=GEMINI_API_KEY, http_options={'api_version': 'v1alpha'})
-else:
-    gemini_client = None
 
 # SiliconFlow & Groq Setup (OpenAI SDK)
 SILICONFLOW_API_KEY = os.getenv("SILICONFLOW_API_KEY")
@@ -42,6 +30,9 @@ else:
 
 # OpenAI client not needed - using SiliconFlow and Groq instead
 openai_client = None
+
+# Gemini is no longer used - using Groq only
+gemini_client = None
 
 # YouTube API Setup - only initialize if API key exists
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")

@@ -4,7 +4,7 @@ from fastapi.responses import StreamingResponse
 
 # Import Schemas - use relative import from app/
 from Schemas.schemas import ChatRequest, VideoResponse
-from database.storage import gemini_client, sf_client, groq_client, get_youtube_videos, save_chat_to_db, get_chat_history, save_portfolio
+from database.storage import sf_client, groq_client, get_youtube_videos, save_chat_to_db, get_chat_history, save_portfolio
 
 router = APIRouter(prefix="/chat", tags=["AI Agents"])
 
@@ -40,23 +40,7 @@ async def cofounder_chat(request: ChatRequest):
                 asyncio.to_thread(get_youtube_videos, f"{request.message} business roadmap 2025")
             )
         
-        # Race Logic: Call Gemini and Groq in parallel
-        async def call_gemini():
-            try:
-                if gemini_client is None:
-                    return (None, "Gemini")
-                response = await gemini_client.models.generate_content(
-                    model='gemini-2.0-flash',
-                    contents=[
-                        {"role": "user", "parts": [{"text": CoFounder_system_prompt}]},
-                        {"role": "user", "parts": [{"text": request.message}]}
-                    ]
-                )
-                return (response.text, "Gemini")
-            except Exception as e:
-                print(f"Gemini Error: {e}")
-                return (None, "Gemini")
-
+        # Use Groq only for AI response
         async def call_groq():
             try:
                 if groq_client is None:
@@ -73,14 +57,13 @@ async def cofounder_chat(request: ChatRequest):
                 print(f"Groq Error: {e}")
                 return (None, "Groq")
 
-        # Run both calls in parallel with 10-second timeout
-        t1 = asyncio.create_task(call_gemini())
-        t2 = asyncio.create_task(call_groq())
+        # Run Groq call with 10-second timeout
+        t1 = asyncio.create_task(call_groq())
         
         try:
-            # Wait for first result with 10-second timeout
+            # Wait for result with 10-second timeout
             done, pending = await asyncio.wait(
-                {t1, t2}, 
+                {t1}, 
                 return_when=asyncio.FIRST_COMPLETED,
                 timeout=10.0  # 10 seconds timeout
             )
@@ -252,56 +235,21 @@ async def generate_roadmap(request: ChatRequest):
     )
     
     roadmap_content = None
-    used_model = "Gemini"
+    used_model = "Groq"
     
-    # Try Gemini first
+    # Use Groq only for AI response
     try:
-        if gemini_client is not None:
-            response = await gemini_client.models.generate_content(
-                model='gemini-2.0-flash',
-                contents=[
-                    {"role": "user", "parts": [{"text": roadmap_system_prompt}]},
-                    {"role": "user", "parts": [{"text": f"Create a roadmap for: {request.message}"}]}
+        if groq_client is not None:
+            response = await groq_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role": "system", "content": roadmap_system_prompt},
+                    {"role": "user", "content": f"Create a roadmap for: {request.message}"}
                 ]
             )
-            roadmap_content = response.text
+            roadmap_content = response.choices[0].message.content
     except Exception as e:
-        error_msg = str(e)
-        print(f"Gemini Roadmap Error: {e}")
-        
-        # Check for 429 (quota exceeded) error
-        if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg or "quota" in error_msg.lower():
-            print("Gemini quota exceeded, falling back to Groq...")
-            used_model = "Groq"
-            
-            # Fallback to Groq
-            try:
-                if groq_client is not None:
-                    response = await groq_client.chat.completions.create(
-                        model="llama-3.3-70b-versatile",
-                        messages=[
-                            {"role": "system", "content": roadmap_system_prompt},
-                            {"role": "user", "content": f"Create a roadmap for: {request.message}"}
-                        ]
-                    )
-                    roadmap_content = response.choices[0].message.content
-            except Exception as groq_error:
-                print(f"Groq fallback also failed: {groq_error}")
-        else:
-            # Other errors - try Groq as fallback anyway
-            used_model = "Groq"
-            try:
-                if groq_client is not None:
-                    response = await groq_client.chat.completions.create(
-                        model="llama-3.3-70b-versatile",
-                        messages=[
-                            {"role": "system", "content": roadmap_system_prompt},
-                            {"role": "user", "content": f"Create a roadmap for: {request.message}"}
-                        ]
-                    )
-                    roadmap_content = response.choices[0].message.content
-            except Exception as groq_error:
-                print(f"Groq fallback also failed: {groq_error}")
+        print(f"Groq Roadmap Error: {e}")
     
     # If still no content, return error
     if not roadmap_content:
@@ -389,21 +337,6 @@ async def analyze_portfolio(request: ChatRequest):
             analysis_result = response.choices[0].message.content
     except Exception as e:
         print(f"Groq Portfolio Analysis Error: {e}")
-        
-        # Fallback to Gemini
-        try:
-            if gemini_client is not None:
-                used_model = "Gemini"
-                response = await gemini_client.models.generate_content(
-                    model='gemini-2.0-flash',
-                    contents=[
-                        {"role": "user", "parts": [{"text": portfolio_system_prompt}]},
-                        {"role": "user", "parts": [{"text": "Analyze my learning logs and provide career insights."}]}
-                    ]
-                )
-                analysis_result = response.text
-        except Exception as gemini_error:
-            print(f"Gemini fallback also failed: {gemini_error}")
     
     if not analysis_result:
         return {
