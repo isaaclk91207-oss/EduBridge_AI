@@ -146,12 +146,12 @@ export default function AICareerPortfolio() {
   const fetchProfileFromBackend = async () => {
     if (!userId) {
       console.error('No user ID available');
-      return false;
+      return { success: false };
     }
 
     if (!supabase) {
       console.error('Supabase not initialized');
-      return false;
+      return { success: false };
     }
 
     try {
@@ -180,26 +180,34 @@ export default function AICareerPortfolio() {
         return { success: true, existingAnalysis };
       }
 
-      // Otherwise call the AI backend for new analysis
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://edu-bridge-ai-backend.vercel.app'}/chat/cofounder`, {
+      // Use the Next.js API route which proxies to the backend
+      // This will work with both demo token and real auth
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
+      const response = await fetch(`${API_URL}/api/v1/chat/portfolio-analysis`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ 
           user_id: userId,
           message: 'Analyze my career profile and provide a summary' 
         }),
       });
 
+      // Log full response for debugging
+      console.log('[Career Scanner] Response status:', response.status);
+      const responseData = await response.json();
+      console.log('[Career Scanner] Response data:', responseData);
+
       if (!response.ok) {
-        console.log('Backend response not ok, using mock data');
+        console.log('[Career Scanner] Backend response not ok, using mock data');
         return { success: false };
       }
 
-      return { success: true };
+      return { success: true, data: responseData };
     } catch (error) {
-      console.error('Error fetching from backend:', error);
+      console.error('[Career Scanner] Error fetching from backend:', error);
       return { success: false };
     }
   };

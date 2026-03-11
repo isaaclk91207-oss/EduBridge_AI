@@ -1,49 +1,52 @@
-# Demo Login Feature Implementation & Cleanup
+# Demo Login Feature Implementation
 
 ## Task: Implement Demo Login for Ideathon Demo
 
-### Steps:
+### Steps Completed:
 - [x] 1. Update `/app/lib/auth.tsx` - Add handleDemoLogin function and update checkAuth to detect DEMO_TOKEN_12345
 - [x] 2. Update `/app/auth/page.tsx` - Add Demo Login button
 - [x] 3. Update `/app/lib/api.ts` - Add fetchWithAuth helper for API calls
-- [x] 4. Clean up `/app/components/ProtectedRoute.tsx` - Add demo token support
-- [x] 5. Clean up `/middleware.ts` - Add demo token support and simplify JWT validation
-- [x] 6. Simplify `/app/lib/auth.tsx` - Remove verbose console logs and dead code
+- [x] 4. Fix AICareerPortfolio component to use correct API endpoint
+- [x] 5. Add beam of light effect to BusinessSimulation component
+- [x] 6. Create check_routes_fixed.py script to check backend routes
 
-## Summary of Changes:
+## Summary of All Changes
 
-### 1. `/app/lib/auth.tsx`:
-- Added `DEMO_TOKEN = 'DEMO_TOKEN_12345'` constant
-- Added `DEMO_USER` object with demo user data
-- Added `handleDemoLogin()` function - sets token to localStorage/cookie and redirects to /dashboard
-- Added `isDemoUser()` function - checks if current user is demo user
-- Updated `checkAuth()` - detects DEMO_TOKEN and bypasses backend call entirely
-- Removed verbose console logging
-- Simplified login/signup functions
+### 1. Demo Login (lib/auth.tsx)
+- Added DEMO_TOKEN = 'DEMO_TOKEN_12345' constant
+- Added DEMO_USER object with demo user data
+- Added handleDemoLogin() function that sets token and redirects to /dashboard
+- Added isDemoUser() function to check if current user is demo
+- Updated checkAuth() to bypass /api/auth/me call when DEMO_TOKEN is detected
 
-### 2. `/app/auth/page.tsx`:
-- Added Demo Login button with orange/amber gradient styling
-- Button calls `handleDemoLogin()` from useAuth hook
+### 2. Demo Login Button (app/auth/page.tsx)
+- Added handleDemoLogin to useAuth() destructuring
+- Added "Demo Login" button for quick access
 
-### 3. `/app/lib/api.ts`:
-- Added `DEMO_TOKEN` constant
-- Added `getAuthToken()` helper function
-- Added `fetchWithAuth()` - enhanced fetch wrapper that automatically includes Authorization header
+### 3. API Helper (lib/api.ts)
+- Added fetchWithAuth() helper for authenticated requests
+- Added AI Chat endpoints:
+  - CHAT_COFOUNDER
+  - CHAT_MENTOR  
+  - CHAT_SUPPORT
+  - CHAT_ROADMAP
+  - CHAT_PORTFOLIO
 
-### 4. `/app/components/ProtectedRoute.tsx`:
-- Added DEMO_TOKEN constant
-- Added demo token detection logging
-- Simplified token check logic
+### 4. Career Scanner Fix (AICareerPortfolio.tsx)
+- Fixed API endpoint from wrong URL to correct `/api/v1/chat/portfolio-analysis`
+- Added console logging for debugging response
 
-### 5. `/middleware.ts`:
-- Added DEMO_TOKEN constant
-- Added demo token detection - accepts DEMO_TOKEN as valid authentication
-- Simplified JWT validation logic
-- Updated redirect to use /auth instead of /signin
+### 5. Business Simulation (BusinessSimulation.tsx)
+- Added "beam of light" visual effect with cyan/blue gradients
+- Animated blur effects for glowing appearance
 
-## How to Use:
+### 6. Route Checker (check_routes_fixed.py)
+- Created script to list all available backend routes
+- Run from backend directory: `cd backend && python -c "from main import app; ..."`
 
-1. **Demo Login**: Click the orange "Demo Login" button on the auth page
-2. **API Calls**: Use `fetchWithAuth('/api/endpoint')` instead of `fetch()` for authenticated requests
-3. **Logout**: The existing logout function clears the demo token automatically
+## To Test:
+1. Redeploy backend to Render
+2. Redeploy frontend to Vercel  
+3. Visit /auth and click "Demo Login"
+4. Check browser console for [Career Scanner] logs
 

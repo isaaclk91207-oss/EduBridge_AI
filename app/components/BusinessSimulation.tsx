@@ -72,7 +72,14 @@ export default function BusinessSimulation() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative">
+      {/* Beam of Light Effect - Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-full bg-gradient-to-b from-transparent via-cyan-400/30 to-transparent blur-xl animate-pulse" />
+        <div className="absolute top-0 left-1/4 w-32 h-full bg-gradient-to-b from-cyan-500/10 via-blue-500/5 to-transparent blur-3xl" />
+        <div className="absolute top-0 right-1/4 w-32 h-full bg-gradient-to-b from-blue-500/10 via-cyan-500/5 to-transparent blur-3xl" />
+      </div>
+      
       {/* Left Side - Case Description */}
       <motion.div
         className="space-y-6"

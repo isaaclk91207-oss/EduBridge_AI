@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 
 from core.database import database_initialize
 from routes import authentication, users, lectures, candidates
-from routes.v1.agent_route import router as agent_router
+from app.routes.v1.agent_route import router as agent_router
 
 
 @asynccontextmanager
