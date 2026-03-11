@@ -1,12 +1,20 @@
 # EduBridge AI Backend - Requirements
+# Python 3.12 compatible versions
+
 fastapi==0.115.0
 uvicorn[standard]==0.32.0
 python-dotenv==1.0.1
+
+# Database - use psycopg2 for compatibility
 psycopg2-binary==2.9.10
 asyncpg==0.30.0
 sqlalchemy==2.0.36
+
+# Pydantic - pinned for Python 3.12 compatibility
 pydantic==2.10.3
 pydantic-settings==2.6.1
+
+# Auth
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 python-multipart==0.0.20
