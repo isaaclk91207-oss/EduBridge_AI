@@ -180,3 +180,17 @@ async def chat(request: ChatRequest):
 async def ai_tutor(message: str, video_title: str):
     response = f"You asked about {video_title}. Here is the explanation: {message}..."
     return {"reply": response}
+
+
+# DEBUG ENDPOINT - List all registered routes
+@app.get("/api/debug/routes")
+async def list_routes():
+    """Debug endpoint to list all registered routes - use this to verify your routes"""
+    routes = []
+    for route in app.routes:
+        if hasattr(route, 'path') and hasattr(route, 'methods'):
+            routes.append({
+                "path": route.path,
+                "methods": list(route.methods) if route.methods else ["GET"]
+            })
+    return {"routes": routes}

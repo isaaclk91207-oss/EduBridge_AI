@@ -5,35 +5,43 @@
  * across the entire application. The backend is deployed on Render.
  * 
  * Usage:
- *   import { buildApiUrl, API_ENDPOINTS } from '@/lib/api';
+ *   import { getEndpointUrl } from '@/lib/api';
  *   
- *   // Get full URL for an endpoint
- *   const url = buildApiUrl('/api/auth/register');
+ *   // Get full URL for an endpoint - FORCES use of the full Render URL
+ *   const url = getEndpointUrl('/api/auth/register');
  */
 
 // Use environment variable with fallback to hardcoded URL for development
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
+// THIS IS YOUR RENDER BACKEND URL - ALL API CALLS GO THROUGH HERE
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
 
 /**
- * Build a full URL for an API endpoint
+ * Build a full URL for an API endpoint - FORCES use of the full Render URL
  * @param endpoint - The API endpoint path (e.g., '/api/auth/register')
- * @returns Full URL to the API endpoint
+ * @returns Full URL to the API endpoint on Render
+ * 
+ * @example
+ * const url = getEndpointUrl('/api/auth/register');
+ * // Returns: 'https://edubridge-ai-ui2j.onrender.com/api/auth/register'
  */
-export function buildApiUrl(endpoint: string): string {
+export const getEndpointUrl = (endpoint: string): string => {
   // Remove leading slash from endpoint if present to avoid double slashes
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-  const fullUrl = `${BACKEND_URL}/${cleanEndpoint}`;
-  console.log('API URL:', fullUrl); // Debug log
+  const fullUrl = `${API_BASE_URL}/${cleanEndpoint}`;
+  
+  // Debug log so you can verify in browser console
+  console.log(`[API] Calling: ${fullUrl}`);
+  
   return fullUrl;
-}
+};
 
 /**
  * Get the raw backend URL
  * @returns The backend URL
  */
-export function getBackendUrl(): string {
-  return BACKEND_URL;
-}
+export const getApiBaseUrl = (): string => {
+  return API_BASE_URL;
+};
 
 /**
  * Predefined API endpoints for consistent usage across the app
@@ -68,26 +76,14 @@ export const API_ENDPOINTS = {
 } as const;
 
 /**
- * Type for predefined endpoint keys
- */
-export type ApiEndpointKey = keyof typeof API_ENDPOINTS;
-
-/**
  * Get the full URL for a predefined endpoint
  * @param endpointKey - The key from API_ENDPOINTS
  * @returns Full URL to the API endpoint
  */
-export function getEndpointUrl(endpointKey: ApiEndpointKey): string {
-  return buildApiUrl(API_ENDPOINTS[endpointKey]);
-}
+export const getFullEndpointUrl = (endpointKey: keyof typeof API_ENDPOINTS): string => {
+  return getEndpointUrl(API_ENDPOINTS[endpointKey]);
+};
 
-/**
- * Get the API base URL
- * @returns The backend URL
- */
-export function getApiUrl(): string {
-  return BACKEND_URL;
-}
-
-export default buildApiUrl;
+export default getEndpointUrl;
+export { getEndpointUrl as buildApiUrl };
 
