@@ -3,20 +3,20 @@
  * 
  * This utility provides a consistent way to access the FastAPI backend URL
  * across the entire application. It uses environment variables with a fallback
- * to the production Vercel deployment.
+ * to the production Render backend.
  * 
  * Usage:
  *   import { getApiUrl, API_ENDPOINTS } from '@/lib/api';
  *   
  *   // Get full URL for an endpoint
- *   const url = getApiUrl('/authentication/login');
+ *   const url = getApiUrl('/auth/login');
  *   
  *   // Or use predefined endpoints
- *   const chatUrl = getApiUrl(API_ENDPOINTS.CHAT);
+ *   const url = getApiUrl(API_ENDPOINTS.LOGIN);
  */
 
-// Default to production URL - this is the Vercel deployed backend
-const DEFAULT_API_URL = 'https://edu-bridge-ai-backend.vercel.app';
+// Default to production URL - this is the Render deployed backend
+const DEFAULT_API_URL = 'https://edubridge-ai-ui2j.onrender.com';
 
 /**
  * Get the API base URL
@@ -33,7 +33,7 @@ export function getApiUrl(): string {
 
 /**
  * Build a full URL for an API endpoint
- * @param endpoint - The API endpoint path (e.g., '/authentication/login')
+ * @param endpoint - The API endpoint path (e.g., '/auth/login')
  * @returns Full URL to the API endpoint
  */
 export function buildApiUrl(endpoint: string): string {
@@ -45,21 +45,26 @@ export function buildApiUrl(endpoint: string): string {
 
 /**
  * Predefined API endpoints for consistent usage across the app
+ * Note: These match the backend routes in the new FastAPI structure
  */
 export const API_ENDPOINTS = {
-  // Authentication
-  LOGIN: '/authentication/login',
-  LOGOUT: '/authentication/logout',
-  SIGNUP: '/authentication/signup',
+  // Authentication - matches /api/auth/* routes
+  LOGIN: '/api/auth/login',
+  LOGOUT: '/api/auth/logout',
+  SIGNUP: '/api/auth/register',
+  ME: '/api/auth/me',
   
-  // Chat endpoints
-  CHAT: '/api/chat',
-  CHAT_MENTOR: '/chat/mentor',
-  CHAT_COFOUNDER: '/chat/cofounder',
+  // User endpoints - matches /api/users/* routes
+  USER_PROFILE: '/api/users/profile',
+  USER_STORE: '/api/users/store',
   
-  // User endpoints
-  USER_PROFILE: '/api/user/profile',
-  USER_STORE: '/api/user/store',
+  // Lecture endpoints - matches /api/lectures/* routes
+  LECTURES: '/api/lectures',
+  LECTURE: '/api/lectures/:id',
+  
+  // Candidate endpoints - matches /api/candidates/* routes
+  CANDIDATES: '/api/candidates',
+  CANDIDATE: '/api/candidates/:id',
   
   // Progress endpoints
   PROGRESS_UPDATE: '/api/progress/update',
