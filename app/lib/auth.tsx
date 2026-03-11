@@ -133,12 +133,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      // Use Next.js API route instead of external backend directly
-      // The API route will proxy to the backend with proper format
-      const url = '/api/auth/login';
+      // Call external backend directly with proper JSON format
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
+      const url = `${backendUrl}/api/auth/login`;
       console.log('Login URL:', url);
       
-      // Send JSON data to the Next.js API route (which proxies to backend)
+      // Send JSON data to the backend
       console.log('Login email:', email);
       console.log('Login password length:', password.length);
       
@@ -214,8 +214,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signup = async (data: { email: string; password: string; name: string; studentType?: string; major?: string }) => {
     try {
-      // Use Next.js API route instead of external backend directly
-      const url = '/api/auth/register';
+      // Call external backend directly with proper JSON format
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
+      const url = `${backendUrl}/api/auth/register`;
       console.log('Signup URL:', url);
       
       const res = await fetch(url, {
