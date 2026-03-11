@@ -87,8 +87,9 @@ export default function AISupportChat() {
 
   // Get the appropriate endpoint based on chat mode
   const getEndpoint = () => {
-    // Use the correct Render backend URL
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
+    // Use the Next.js API route (not the FastAPI backend!)
+    // The chat routes are in app/routes/v1/agent_route.py on Vercel
+    const API_URL = '/api/v1';
     console.log('[AI Support] Using API URL:', API_URL);
     switch (chatMode) {
       case "cofounder":
