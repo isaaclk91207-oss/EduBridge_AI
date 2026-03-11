@@ -3,11 +3,12 @@ services:
     name: edubridge-backend
     env: python
     region: oregon
+    rootDir: .
     buildCommand: pip install --no-cache-dir -r app/requirements.txt
-    startCommand: uvicorn app:app --host 0.0.0.0 --port=10000
+    startCommand: uvicorn app.app:app --host 0.0.0.0 --port=10000
     envVars:
       - key: PYTHON_VERSION
-        value: "3.12.6"
+        value: "3.12.0"
       - key: PORT
         value: "10000"
       - key: FRONTEND_URL
