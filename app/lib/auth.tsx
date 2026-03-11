@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 export const DEMO_TOKEN = 'DEMO_TOKEN_12345';
 
 // Demo user data
-export const DEMO_USER: User = {
+export const DEMO_USER = {
   id: 'demo-user-001',
   email: 'demo@edubridge.ai',
   name: 'Demo User'
@@ -36,7 +36,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 function setCookie(name: string, value: string, days: number = 7) {
   const expires = new Date();
   expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Strict`;
 }
 
 // Helper to get cookie
@@ -45,7 +45,6 @@ function getCookie(name: string): string | null {
     const localToken = localStorage.getItem('access_token');
     if (localToken) return localToken;
   }
-  
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
@@ -65,7 +64,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Check if current user is a demo user
   const isDemoUser = (): boolean => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('access_token') || getCookie('access_token');
@@ -74,43 +72,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
-  // Demo login handler - bypasses backend authentication
   const handleDemoLogin = async (): Promise<void> => {
     console.log('[Demo Login] Setting demo token');
-    
     if (typeof window !== 'undefined') {
       localStorage.setItem('access_token', DEMO_TOKEN);
     }
-    
     setCookie('access_token', DEMO_TOKEN, 7);
-    setUser(DEMO_USER);
-    
-    console.log('[Demo Login] User set to demo user, redirecting to /dashboard');
+    setUser(DEMO_USER as User);
+    console.log('[Demo Login] User set, redirecting to /dashboard');
     router.push('/dashboard');
   };
 
   const checkAuth = async () => {
     try {
       let token = null;
-      
       if (typeof window !== 'undefined') {
         token = localStorage.getItem('access_token');
       }
-      
       if (!token) {
         token = getCookie('access_token');
       }
-      
       if (!token) {
         setUser(null);
         setLoading(false);
         return;
       }
 
-      // SPECIAL HANDLING FOR DEMO TOKEN - Skip backend call entirely!
+      // DEMO TOKEN - Skip backend call
       if (token === DEMO_TOKEN) {
         console.log('[checkAuth] Demo token detected, bypassing backend');
-        setUser(DEMO_USER);
+        setUser(DEMO_USER as User);
         setLoading(false);
         return;
       }
@@ -119,9 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const url = '/api/auth/me';
       const res = await fetch(url, {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
         credentials: 'include'
       });
       
@@ -149,7 +138,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Simplified login - can still be used for real auth if needed
   const login = async (email: string, password: string) => {
     try {
       const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
@@ -169,12 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (typeof window !== 'undefined') {
           localStorage.setItem('access_token', data.access_token);
         }
-        
-        setUser({
-          id: '1',
-          email: email,
-          name: email.split('@')[0]
-        });
+        setUser({ id: '1', email, name: email.split('@')[0] });
         return { success: true };
       } else {
         const errorMessage = data.detail || data.error || 'Login failed';
@@ -186,7 +169,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Simplified signup
   const signup = async (data: { email: string; password: string; name: string; studentType?: string; major?: string }) => {
     try {
       const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
@@ -216,7 +198,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             localStorage.setItem('access_token', token);
           }
         }
-        
         setUser({
           id: response.user?.id || response.user_id || response.id || '1',
           email: response.user?.email || response.email || data.email,
@@ -235,10 +216,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
-      });
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     } catch (error) {
       console.error('[Logout] API call failed:', error);
     } finally {

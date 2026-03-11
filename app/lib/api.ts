@@ -27,6 +27,12 @@ export const API_ENDPOINTS = {
   ANALYZE_CANDIDATE: '/api/analyze-candidate',
   GENERATE_ROADMAP: '/api/generate-roadmap',
   EXECUTE: '/api/execute',
+  // AI Chat endpoints (now available at /api/v1/chat/*)
+  CHAT_COFOUNDER: '/api/v1/chat/cofounder',
+  CHAT_MENTOR: '/api/v1/chat/mentor',
+  CHAT_SUPPORT: '/api/v1/chat/support',
+  CHAT_ROADMAP: '/api/v1/chat/roadmap',
+  CHAT_PORTFOLIO: '/api/v1/chat/portfolio-analysis',
 } as const;
 
 export const getFullEndpointUrl = (endpointKey: keyof typeof API_ENDPOINTS): string => {

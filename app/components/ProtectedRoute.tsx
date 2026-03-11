@@ -16,9 +16,8 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for token in both cookie and localStorage
     const checkAuth = () => {
-      // Check localStorage first (our backup)
+      // Check localStorage first
       const localToken = localStorage.getItem('access_token');
       
       // Check cookie
@@ -30,18 +29,22 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
       const hasToken = localToken || cookieToken;
       
-      console.log('ProtectedRoute - Token check:', { 
+      // Check if it's the demo token
+      const isDemo = localToken === DEMO_TOKEN || cookieToken === DEMO_TOKEN;
+      
+      console.log('[ProtectedRoute] Token check:', { 
         hasToken, 
         hasLocalToken: !!localToken, 
         hasCookieToken: !!cookieToken,
-        isDemoToken: localToken === DEMO_TOKEN || cookieToken === DEMO_TOKEN
+        isDemoToken: isDemo
       });
 
       if (hasToken) {
+        // Allow both real tokens and demo tokens
         setIsAuthorized(true);
       } else {
         // No token found - redirect to auth
-        console.log('ProtectedRoute - No token, redirecting to /auth');
+        console.log('[ProtectedRoute] No token, redirecting to /auth');
         router.push('/auth?redirect=' + encodeURIComponent(window.location.pathname));
       }
       

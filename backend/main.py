@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 
 from core.database import database_initialize
 from routes import authentication, users, lectures, candidates
+from routes.v1.agent_route import router as agent_router
 
 
 @asynccontextmanager
@@ -46,6 +47,7 @@ app.include_router(authentication.router, prefix="/api/auth", tags=["Authenticat
 app.include_router(users.router, prefix="/api/users", tags=["Users"])
 app.include_router(lectures.router, prefix="/api/lectures", tags=["Lectures"])
 app.include_router(candidates.router, prefix="/api/candidates", tags=["Candidates"])
+app.include_router(agent_router, prefix="/api/v1", tags=["AI Agents"])
 
 
 # Health Check Endpoint
