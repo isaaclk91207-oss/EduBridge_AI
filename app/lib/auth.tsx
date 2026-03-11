@@ -236,24 +236,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('Signup response:', response);
       console.log('Signup response type:', typeof response);
       console.log('Signup response keys:', Object.keys(response));
+      console.log('Signup response.ok:', res.ok);
       
-      if (res.ok) {
+      // Check for success - could be either res.ok or success: true in body
+      if (res.ok || response.success) {
         // Save token to both cookie and localStorage
         // The cookie is for middleware/server-side, localStorage is for client-side backup
-        if (response.access_token) {
+        const token = response.access_token || response.accessToken;
+        if (token) {
           // Save to cookie for middleware to read
-          setCookie('access_token', response.access_token, 7);
+          setCookie('access_token', token, 7);
           // Also save to localStorage as backup
           if (typeof window !== 'undefined') {
-            localStorage.setItem('access_token', response.access_token);
+            localStorage.setItem('access_token', token);
             console.log('Signup: Token saved to localStorage');
           }
         }
         
         setUser({
-          id: response.id || '1',
-          email: response.email,
-          name: response.username || response.full_name || data.name
+          id: response.user?.id || response.user_id || response.id || '1',
+          email: response.user?.email || response.email || data.email,
+          name: response.user?.username || response.username || response.full_name || data.name
         });
         return { success: true };
       } else {
@@ -276,6 +279,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // String format
             errorMessage = response.detail;
           }
+        } else if (response.message) {
+          errorMessage = response.message;
+        } else if (response.error) {
+          errorMessage = response.error;
         }
         
         console.log('Parsed signup error message:', errorMessage);

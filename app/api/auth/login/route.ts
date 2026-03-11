@@ -38,17 +38,32 @@ export async function POST(request: NextRequest) {
 
     console.log('Login API - Backend response status:', response.status);
 
+    // Get response text first to debug
+    const responseText = await response.text();
+    console.log('Login API - Raw response:', responseText);
+
+    // Try to parse as JSON
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Failed to parse response as JSON:', responseText);
+      return NextResponse.json(
+        { error: 'Invalid response from backend' },
+        { status: 500 }
+      );
+    }
+
     if (!response.ok) {
-      const error = await response.json();
       // Handle FastAPI error format
       let errorMessage = 'Invalid email or password';
-      if (error.detail) {
-        if (Array.isArray(error.detail)) {
-          errorMessage = error.detail.map((e: any) => e.msg || JSON.stringify(e)).join(', ');
-        } else if (typeof error.detail === 'string') {
-          errorMessage = error.detail;
+      if (data && data.detail) {
+        if (Array.isArray(data.detail)) {
+          errorMessage = data.detail.map((e: any) => e.msg || JSON.stringify(e)).join(', ');
+        } else if (typeof data.detail === 'string') {
+          errorMessage = data.detail;
         } else {
-          errorMessage = JSON.stringify(error.detail);
+          errorMessage = JSON.stringify(data.detail);
         }
       }
       return NextResponse.json(
@@ -57,7 +72,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const data = await response.json();
     console.log('Login API - Backend response data keys:', Object.keys(data));
 
     // Forward the Set-Cookie header from FastAPI to the client
