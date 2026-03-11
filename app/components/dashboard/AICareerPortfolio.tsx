@@ -212,6 +212,110 @@ export default function AICareerPortfolio() {
     }
   };
 
+  // NEW: Handle Start Scan - calls the /api/v1/scan endpoint
+  const handleStartScan = async () => {
+    if (!userId) {
+      console.error('No user ID available');
+      return;
+    }
+
+    setIsScanning(true);
+    setCurrentLog(0);
+
+    // Get learning history from user_progress table
+    let learningHistory: any[] = [];
+    let userSkills: string[] = [];
+    let interests: string[] = [];
+
+    if (supabase) {
+      try {
+        // Fetch user progress (learning history)
+        const { data: progressData } = await supabase
+          .from('user_progress')
+          .select('*')
+          .eq('user_id', userId);
+        
+        if (progressData && progressData.length > 0) {
+          learningHistory = progressData.map((p: any) => ({
+            title: p.course_name || p.title || 'Course',
+            course: p.course || '',
+            duration: p.duration || ''
+          }));
+        }
+
+        // Fetch user skills from profile if available
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('skills, interests')
+          .eq('id', userId)
+          .single();
+        
+        if (profileData) {
+          userSkills = profileData.skills || [];
+          interests = profileData.interests || [];
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    }
+
+    // Call the new /api/v1/scan endpoint
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
+      const response = await fetch(`${API_URL}/api/v1/scan`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          user_id: userId,
+          skills: userSkills,
+          learning_history: learningHistory,
+          interests: interests,
+          experience_years: 0,
+          education: ''
+        }),
+      });
+
+      console.log('[Career Scan] Response status:', response.status);
+      const scanResult = await response.json();
+      console.log('[Career Scan] Response data:', scanResult);
+
+      if (response.ok && scanResult.success) {
+        // Store the scan result for display
+        setScanResult(scanResult.report);
+      } else {
+        console.log('[Career Scan] Scan failed or returned error');
+      }
+    } catch (error) {
+      console.error('[Career Scan] Error calling scan endpoint:', error);
+    }
+
+    // Show scanning animation
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    let logIndex = 0;
+    const interval = setInterval(() => {
+      if (logIndex < terminalLogs.length) {
+        setCurrentLog(logIndex + 1);
+        logIndex++;
+      } else {
+        clearInterval(interval);
+        setTimeout(() => {
+          setIsScanning(false);
+          setShowResults(true);
+          
+          // Save analysis to student_analyses table
+          saveAnalysisToDb(userId);
+        }, 500);
+      }
+    }, 800);
+  };
+
+  // State to store scan result
+  const [scanResult, setScanResult] = useState<any>(null);
+
   const handleScan = async () => {
     if (!userId) {
       console.error('No user ID available');
@@ -379,7 +483,7 @@ export default function AICareerPortfolio() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={handleScan}
+                onClick={handleStartScan}
                 className="px-10 py-4 bg-gradient-to-r from-[var(--accent-blue)] to-[var(--accent-cyan)] rounded-full font-semibold text-lg flex items-center gap-3 shadow-lg hover:opacity-90 transition-all"
                 style={{ boxShadow: '0 0 30px var(--accent-glow)' }}
               >
