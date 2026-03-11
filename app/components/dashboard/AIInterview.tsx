@@ -88,9 +88,9 @@ export default function AIInterview() {
 
     try {
       const userId = generateUserId();
-      // Use the Next.js API route (not the FastAPI backend!)
-      // The chat routes are in app/routes/v1/agent_route.py on Vercel
-      const API_URL = '/api/v1';
+      // Use the backend API URL directly - FastAPI is hosted on Render
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://edubridge-ai-ui2j.onrender.com';
+      const API_URL = `${API_BASE_URL}/api/v1`;
       console.log('[AI Interview] Calling API at:', `${API_URL}/chat/mentor`);
       
       const response = await fetch(

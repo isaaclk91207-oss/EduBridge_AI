@@ -1,10 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List
 from contextlib import asynccontextmanager
 import sys
 import os
+import traceback
 
 # Add the current directory to Python path for imports
 sys.path.insert(0, os.getcwd())
@@ -34,6 +36,27 @@ async def db_lifespan(app: FastAPI):
 
 app = FastAPI(title="EduBridge AI API", version="0.0.1", lifespan=db_lifespan)
 
+# Global exception handler for better error messages
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Handle all unhandled exceptions and return detailed error messages"""
+    error_message = str(exc)
+    error_traceback = traceback.format_exc()
+    
+    # Log the full error for debugging
+    print(f"ERROR: {error_message}")
+    print(f"TRACE: {error_traceback}")
+    
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "Internal Server Error",
+            "message": error_message,
+            "path": str(request.url),
+            "detail": error_traceback if os.environ.get("DEBUG") else None
+        }
+    )
+
 # CORS Setup - allows localhost and production Vercel frontend
 app.add_middleware(
     CORSMiddleware,
@@ -46,10 +69,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(issues_router)
-app.include_router(authentication_router)
-app.include_router(user_router)
+# Include routers with /api/v1 prefix
+app.include_router(issues_router, prefix="/api/v1")
+app.include_router(authentication_router, prefix="/api/v1")
+app.include_router(user_router, prefix="/api/v1")
 
 
 # Health Check Endpoint

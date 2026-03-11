@@ -13,21 +13,21 @@ export const getEndpointUrl = (endpoint: string): string => {
 export const getApiBaseUrl = (): string => API_BASE_URL;
 
 export const API_ENDPOINTS = {
-  LOGIN: '/api/auth/login',
-  LOGOUT: '/api/auth/logout',
-  REGISTER: '/api/auth/register',
-  ME: '/api/auth/me',
-  USER_PROFILE: '/api/users/profile',
-  USER_STORE: '/api/users/store',
+  LOGIN: '/api/v1/authentication/login',
+  LOGOUT: '/api/v1/authentication/logout',
+  REGISTER: '/api/v1/authentication/register',
+  ME: '/api/v1/authentication/login',
+  USER_PROFILE: '/api/v1/user/profile',
+  USER_STORE: '/api/v1/user/profile',
   LECTURES: '/api/lectures',
   LECTURE: '/api/lectures/:id',
   CANDIDATES: '/api/candidates',
   CANDIDATE: '/api/candidates/:id',
   PROGRESS_UPDATE: '/api/progress/update',
-  ANALYZE_CANDIDATE: '/api/analyze-candidate',
-  GENERATE_ROADMAP: '/api/generate-roadmap',
+  ANALYZE_CANDATE: '/api/v1/chat/portfolio-analysis',
+  GENERATE_ROADMAP: '/api/v1/chat/roadmap',
   EXECUTE: '/api/execute',
-  // AI Chat endpoints (now available at /api/v1/chat/*)
+  // AI Chat endpoints
   CHAT_COFOUNDER: '/api/v1/chat/cofounder',
   CHAT_MENTOR: '/api/v1/chat/mentor',
   CHAT_SUPPORT: '/api/v1/chat/support',
