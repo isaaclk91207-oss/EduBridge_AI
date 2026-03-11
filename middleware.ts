@@ -67,5 +67,7 @@ export const config = {
     '/signin',
     '/signup',
     '/auth',
+    // Don't match API routes - let them handle their own auth
+    '/api/auth/:path*',
   ],
 };

@@ -60,10 +60,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   const checkAuth = async () => {
+    // Prevent multiple simultaneous checks
+    if (!loading) {
+      // Already checked, skip
+    }
+    
     try {
-      // First check if we have a token in cookies (set by login)
-      const token = getCookie('access_token');
-      console.log('checkAuth - Token from cookie:', token ? 'exists' : 'none');
+      // First check if we have a token in localStorage (client-side backup)
+      let token = null;
+      
+      if (typeof window !== 'undefined') {
+        token = localStorage.getItem('access_token');
+        console.log('checkAuth - Token from localStorage:', token ? 'exists' : 'none');
+      }
+      
+      // Also check cookie for server-set token
+      if (!token) {
+        token = getCookie('access_token');
+        console.log('checkAuth - Token from cookie:', token ? 'exists' : 'none');
+      }
       
       if (!token) {
         console.log('checkAuth - No token found, user not authenticated');
@@ -72,8 +87,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Verify token with backend
-      const url = buildApiUrl(API_ENDPOINTS.ME || '/api/auth/me');
+      // Use Next.js API route instead of external backend to avoid CORS issues
+      // The API route will proxy to the backend with proper credentials
+      const url = '/api/auth/me';
+      console.log('checkAuth - Calling:', url);
+      
       const res = await fetch(url, {
         method: 'GET',
         headers: {
@@ -87,11 +105,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res.ok) {
         const data = await res.json();
         console.log('checkAuth - /me response data:', data);
-        setUser({
-          id: data.id || '1',
-          email: data.email,
-          name: data.username || data.full_name || 'User'
-        });
+        
+        // Check if the user is authenticated based on the response
+        if (data.authenticated) {
+          setUser({
+            id: data.id || data.user_id || '1',
+            email: data.email,
+            name: data.username || data.full_name || data.email?.split('@')[0] || 'User'
+          });
+        } else {
+          // Token invalid, clear it
+          deleteCookie('access_token');
+          setUser(null);
+        }
       } else {
         // Token invalid, clear it
         deleteCookie('access_token');
