@@ -65,3 +65,33 @@ If your backend returns a simple string like `mock_token_xxx`, it won't be parse
 
 3. **logout()** - Now properly clears the cookie
 
+4. **Error handling** - Now properly handles Pydantic validation errors:
+   ```javascript
+   // The error format from FastAPI/Pydantic is:
+   // { detail: [{ type, loc, msg, input }] }
+   
+   if (Array.isArray(response.detail)) {
+     errorMessage = response.detail.map((err) => {
+       return err.msg || err.message || JSON.stringify(err);
+     }).join(', ');
+   }
+   ```
+
+## Understanding Pydantic Validation Errors
+
+When your FastAPI backend returns a validation error, it looks like this:
+```json
+{
+  "detail": [
+    {
+      "type": "value_error",
+      "loc": ["body", "email"],
+      "msg": "value is not a valid email address",
+      "input": "not-an-email"
+    }
+  ]
+}
+```
+
+The code now extracts the `msg` field to display a human-readable error.
+

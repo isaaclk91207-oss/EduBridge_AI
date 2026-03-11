@@ -106,6 +106,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       const data = await res.json();
       console.log('Login response:', data);
+      console.log('Login response type:', typeof data);
+      console.log('Login response keys:', Object.keys(data));
       
       if (data.access_token) {
         // Save token to cookie for middleware to read
@@ -118,10 +120,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         return { success: true };
       } else {
-        return { success: false, error: data.detail || 'Login failed' };
+        // Handle Pydantic validation error or other error formats
+        let errorMessage = 'Login failed';
+        
+        if (data.detail) {
+          // FastAPI error format - could be string or array
+          if (Array.isArray(data.detail)) {
+            // Pydantic validation error array
+            errorMessage = data.detail.map((err: any) => {
+              console.log('Validation error object:', err);
+              return err.msg || err.message || JSON.stringify(err);
+            }).join(', ');
+          } else if (typeof data.detail === 'object') {
+            // Object format error
+            errorMessage = data.detail.msg || data.detail.message || JSON.stringify(data.detail);
+          } else {
+            // String format
+            errorMessage = data.detail;
+          }
+        }
+        
+        console.log('Parsed error message:', errorMessage);
+        return { success: false, error: errorMessage };
       }
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('Login failed - caught error:', error);
+      console.error('Error type:', typeof error);
+      // Log error details safely
+      if (error && typeof error === 'object') {
+        console.error('Error keys:', Object.keys(error as object));
+      }
       return { success: false, error: 'Login failed. Please try again.' };
     }
   };
@@ -145,6 +173,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       const response = await res.json();
       console.log('Signup response:', response);
+      console.log('Signup response type:', typeof response);
+      console.log('Signup response keys:', Object.keys(response));
       
       if (res.ok) {
         // For signup, we might need to login after registration
@@ -160,10 +190,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         return { success: true };
       } else {
-        return { success: false, error: response.detail || 'Signup failed' };
+        // Handle Pydantic validation error or other error formats
+        let errorMessage = 'Signup failed';
+        
+        if (response.detail) {
+          // FastAPI error format - could be string or array
+          if (Array.isArray(response.detail)) {
+            // Pydantic validation error array
+            errorMessage = response.detail.map((err: any) => {
+              console.log('Signup validation error object:', err);
+              // err has: {type, loc, msg, input}
+              return err.msg || err.message || JSON.stringify(err);
+            }).join(', ');
+          } else if (typeof response.detail === 'object') {
+            // Object format error - could have msg field
+            errorMessage = response.detail.msg || response.detail.message || JSON.stringify(response.detail);
+          } else {
+            // String format
+            errorMessage = response.detail;
+          }
+        }
+        
+        console.log('Parsed signup error message:', errorMessage);
+        return { success: false, error: errorMessage };
       }
     } catch (error) {
-      console.error('Signup failed:', error);
+      console.error('Signup failed - caught error:', error);
+      console.error('Signup error type:', typeof error);
+      if (error && typeof error === 'object') {
+        console.error('Signup error keys:', Object.keys(error as object));
+      }
       return { success: false, error: 'Signup failed. Please try again.' };
     }
   };
