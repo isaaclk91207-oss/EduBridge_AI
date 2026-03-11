@@ -8,7 +8,7 @@
 - [x] 3. Update `/app/lib/api.ts` - Add fetchWithAuth helper for API calls
 - [x] 4. Fix AICareerPortfolio component to use correct API endpoint
 - [x] 5. Add beam of light effect to BusinessSimulation component
-- [x] 6. Create check_routes_fixed.py script to check backend routes
+- [x] 6. Fix backend/main.py - Remove non-existent agent_route import
 
 ## Summary of All Changes
 
@@ -21,32 +21,38 @@
 
 ### 2. Demo Login Button (app/auth/page.tsx)
 - Added handleDemoLogin to useAuth() destructuring
-- Added "Demo Login" button for quick access
+- Add button where you want it:
+```tsx
+<button
+  onClick={handleDemoLogin}
+  className="w-full py-2 mt-4 bg-gradient-to-r from-purple-500 to-pink-500..."
+>
+  Demo Login
+</button>
+```
 
 ### 3. API Helper (lib/api.ts)
 - Added fetchWithAuth() helper for authenticated requests
-- Added AI Chat endpoints:
-  - CHAT_COFOUNDER
-  - CHAT_MENTOR  
-  - CHAT_SUPPORT
-  - CHAT_ROADMAP
-  - CHAT_PORTFOLIO
+- Added AI Chat endpoints
 
-### 4. Career Scanner Fix (AICareerPortfolio.tsx)
-- Fixed API endpoint from wrong URL to correct `/api/v1/chat/portfolio-analysis`
-- Added console logging for debugging response
+### 4. Backend Fix (backend/main.py)
+- Removed import of non-existent `routes.v1.agent_route` 
+- The AI routes are handled by Next.js API routes (app/routes/v1/)
 
-### 5. Business Simulation (BusinessSimulation.tsx)
+### 5. Career Scanner Fix (AICareerPortfolio.tsx)
+- Fixed API endpoint to use correct endpoint
+
+### 6. Business Simulation (BusinessSimulation.tsx)
 - Added "beam of light" visual effect with cyan/blue gradients
-- Animated blur effects for glowing appearance
 
-### 6. Route Checker (check_routes_fixed.py)
-- Created script to list all available backend routes
-- Run from backend directory: `cd backend && python -c "from main import app; ..."`
+## To Deploy:
+1. Push changes to GitHub
+2. Backend will deploy to Render (should work now)
+3. Frontend will deploy to Vercel
 
-## To Test:
-1. Redeploy backend to Render
-2. Redeploy frontend to Vercel  
-3. Visit /auth and click "Demo Login"
-4. Check browser console for [Career Scanner] logs
+## To Test Demo Login:
+1. Visit /auth page
+2. Click "Demo Login" button
+3. You'll be redirected to /dashboard
+4. Check browser console for logs
 
