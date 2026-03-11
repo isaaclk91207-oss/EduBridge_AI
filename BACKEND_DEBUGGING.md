@@ -1,70 +1,67 @@
-# Debugging Backend Connection Issues
+# Authentication Debug Guide
 
-## Understanding the Error
+## How to Debug the Authentication Loop
 
-**"SyntaxError: Unexpected token 'T', 'The deploy' is not valid JSON"**
+### 1. Check Browser Console (F12)
+Look for these debug logs I added:
+- `checkAuth - Token from cookie:` - Shows if token exists
+- `Login URL:` - Shows the full URL being called
+- `Login response:` - Shows the backend response
 
-This error means your **frontend is receiving HTML instead of JSON**. The "T" likely comes from "The deploy is in progress..." or similar HTML page from Render.
+### 2. Check Cookies in Browser
+1. Open DevTools (F12) → Application tab → Cookies
+2. Look for `access_token` cookie
+3. If it doesn't exist, login is not saving the token
 
-## Root Causes
+### 3. Check Network Tab
+1. Go to Network tab
+2. Look for requests to `/api/auth/login` and `/api/auth/me`
+3. Check if they're going to `edubridge-ai-ui2j.onrender.com`
+4. Check the Response to see if token is returned
 
-1. **Backend crashed on startup** - Missing environment variable like `DATABASE_URL`
-2. **Backend is still deploying** - Render is rebuilding the service
-3. **Backend returned an error page** - Any 500 error that returns HTML instead of JSON
-4. **Frontend calling wrong URL** - Requests going to Vercel instead of Render
+### 4. Test the Backend Directly
+```bash
+# Test login
+curl -X POST https://edubridge-ai-ui2j.onrender.com/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "test@example.com", "password": "password123"}'
 
-## How to Debug in Browser
+# Test /me endpoint with token
+curl -X GET https://edubridge-ai-ui2j.onrender.com/api/auth/me \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+```
 
-### 1. Open Network Tab
-- Press F12 to open Developer Tools
-- Go to **Network** tab
-- Make the failing request again
-- Click on the request (e.g., `signup`)
-- Look at **Response** tab
+### 5. Verify Token Format
+The middleware expects a JWT token with 3 parts separated by dots:
+- `header.payload.signature`
+If your backend returns a simple string like `mock_token_xxx`, it won't be parsed correctly.
 
-### 2. What to Look For
-If you see HTML content starting with:
-- `<!DOCTYPE html>` - It's an error page
-- `<html` - It's an error page  
-- "The deploy" - Render's deployment page
-- "Application error" - Runtime crash
-- "Internal Server Error" - Backend crashed
+## Common Issues
 
-### 3. Check Response Headers
-- **Content-Type**: Should be `application/json`
-- If it's `text/html`, you're getting an error page
+### Issue: Token not saved to cookie
+**Symptom:** Login succeeds but redirects to login page again
+**Fix:** Check console for `setCookie` calls - the login function now saves token to cookie
 
-## What I Fixed
+### Issue: Middleware can't read token
+**Symptom:** Redirect loop even after successful login
+**Fix:** Token must be in `access_token` cookie with JWT format
 
-I've updated the frontend to use direct URLs to the Render backend:
+### Issue: Backend /me endpoint fails
+**Symptom:** Console shows `/me response status: 401` or `500`
+**Fix:** The backend /me endpoint needs to validate the JWT token
 
-### 1. app/lib/api.ts
-- Changed to use **hardcoded backend URL**: `https://edubridge-ai-ui2j.onrender.com`
-- Added `buildApiUrl()` function that always returns the full URL
-- Fixed endpoints to match backend: `/api/auth/register` (not `/api/auth/signup`)
+## What Was Fixed
 
-### 2. app/lib/auth.tsx  
-- Updated all fetch calls to use `buildApiUrl(API_ENDPOINTS.LOGIN)` etc.
-- Added console.log to debug the actual URL being called
+1. **app/lib/auth.tsx** - Now saves token to cookie after login:
+   ```javascript
+   setCookie('access_token', data.access_token, 7);
+   ```
 
-### 3. next.config.ts
-- Added rewrites to proxy `/api/*` requests to the Render backend
+2. **checkAuth()** - Now reads from cookie AND sends Authorization header:
+   ```javascript
+   const token = getCookie('access_token');
+   // Then calls /me with: 'Authorization': `Bearer ${token}`
+   ```
 
-## Setting NEXT_PUBLIC_API_URL in Vercel (Optional)
-
-If you want to use environment variables instead of hardcoded URLs:
-
-1. Go to **Vercel Dashboard** → Your Project → **Settings** → **Environment Variables**
-2. Add a new variable:
-   - **Name**: `NEXT_PUBLIC_API_URL`
-   - **Value**: `https://edubridge-ai-ui2j.onrender.com`
-3. **Important**: Add the same variable for all environments (Production, Preview, Development)
-4. Redeploy your Vercel project
-
-## Quick Checklist
-
-- [ ] Check browser console - do you see the correct URL being logged?
-- [ ] Check Network tab - is the request going to `edubridge-ai-ui2j.onrender.com`?
-- [ ] Test backend directly: `curl https://edubridge-ai-ui2j.onrender.com/`
-- [ ] Check Render logs for backend errors
+3. **logout()** - Now properly clears the cookie
 

@@ -21,6 +21,26 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper to set cookie (for middleware to read)
+function setCookie(name: string, value: string, days: number = 7) {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+}
+
+// Helper to get cookie
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
+// Helper to delete cookie
+function deleteCookie(name: string) {
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,21 +48,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      // Use the API URL helper to hit the backend
+      // First check if we have a token in cookies (set by login)
+      const token = getCookie('access_token');
+      console.log('checkAuth - Token from cookie:', token ? 'exists' : 'none');
+      
+      if (!token) {
+        console.log('checkAuth - No token found, user not authenticated');
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      // Verify token with backend
       const url = buildApiUrl(API_ENDPOINTS.ME || '/api/auth/me');
       const res = await fetch(url, {
         method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
         credentials: 'include'
       });
-      const data = await res.json();
       
-      if (data.authenticated && data.user) {
+      console.log('checkAuth - /me response status:', res.status);
+      
+      if (res.ok) {
+        const data = await res.json();
+        console.log('checkAuth - /me response data:', data);
         setUser({
-          id: data.user.id || data.user.userId,
-          email: data.user.email,
-          name: data.user.username || data.user.name
+          id: data.id || '1',
+          email: data.email,
+          name: data.username || data.full_name || 'User'
         });
       } else {
+        // Token invalid, clear it
+        deleteCookie('access_token');
         setUser(null);
       }
     } catch (error) {
@@ -56,20 +95,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const url = buildApiUrl(API_ENDPOINTS.LOGIN);
+      console.log('Login URL:', url);
+      
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: email, password }),  // OAuth2 expects username/password
+        body: JSON.stringify({ username: email, password }),
         credentials: 'include'
       });
       
       const data = await res.json();
+      console.log('Login response:', data);
       
       if (data.access_token) {
+        // Save token to cookie for middleware to read
+        setCookie('access_token', data.access_token, 7);
+        
         setUser({
-          id: data.user?.id || '1',
+          id: '1',
           email: email,
-          name: data.user?.username || email.split('@')[0]
+          name: email.split('@')[0]
         });
         return { success: true };
       } else {
@@ -83,7 +128,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signup = async (data: { email: string; password: string; name: string; studentType?: string; major?: string }) => {
     try {
-      // Use buildApiUrl to ensure we're hitting the backend
       const url = buildApiUrl('/api/auth/register');
       console.log('Signup URL:', url);
       
@@ -103,6 +147,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('Signup response:', response);
       
       if (res.ok) {
+        // For signup, we might need to login after registration
+        // Or the backend might return a token directly
+        if (response.access_token) {
+          setCookie('access_token', response.access_token, 7);
+        }
+        
         setUser({
           id: response.id || '1',
           email: response.email,
@@ -125,10 +175,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: 'POST',
         credentials: 'include'
       });
+    } catch (error) {
+      console.error('Logout API call failed:', error);
+    } finally {
+      // Always clear local state regardless of API call result
+      deleteCookie('access_token');
       setUser(null);
       router.push('/signin');
-    } catch (error) {
-      console.error('Logout failed:', error);
     }
   };
 
