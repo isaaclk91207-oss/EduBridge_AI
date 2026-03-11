@@ -89,8 +89,20 @@ export async function POST(request: NextRequest) {
     return nextResponse;
   } catch (error) {
     console.error('Login error:', error);
+    // Provide more detailed error information
+    let errorMessage = 'Failed to connect to backend. Please make sure the backend server is running.';
+    
+    if (error instanceof Error && error.message.includes('fetch')) {
+      // Network error - backend is unreachable
+      console.error('Network error - backend may be down or URL is incorrect');
+      errorMessage = 'Cannot connect to backend server. Please try again later.';
+    } else if (error instanceof Error) {
+      console.error('Error details:', error.message);
+      errorMessage = error.message;
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to connect to backend. Please make sure the backend server is running.' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
