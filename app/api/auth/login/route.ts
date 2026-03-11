@@ -47,10 +47,11 @@ export async function POST(request: NextRequest) {
     try {
       data = JSON.parse(responseText);
     } catch (e) {
-      console.error('Failed to parse response as JSON:', responseText);
+      // Response is not JSON - could be HTML error page or other content
+      console.error('Failed to parse response as JSON:', responseText.substring(0, 200));
       return NextResponse.json(
-        { error: 'Invalid response from backend' },
-        { status: 500 }
+        { error: 'Backend returned invalid response. Please ensure backend is running.' },
+        { status: 502 }
       );
     }
 
