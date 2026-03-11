@@ -97,10 +97,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const url = buildApiUrl(API_ENDPOINTS.LOGIN);
       console.log('Login URL:', url);
       
+      // OAuth2PasswordRequestForm expects form data, NOT JSON
+      // It expects: username=...&password=...
+      const formBody = new URLSearchParams();
+      formBody.append('username', email);
+      formBody.append('password', password);
+      
+      console.log('Login form body (URLSearchParams):', formBody.toString());
+      console.log('Login email:', email);
+      console.log('Login password length:', password.length);
+      
       const res = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: email, password }),
+        headers: { 
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formBody.toString(),
         credentials: 'include'
       });
       

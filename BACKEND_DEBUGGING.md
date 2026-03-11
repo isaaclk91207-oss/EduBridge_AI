@@ -95,3 +95,37 @@ When your FastAPI backend returns a validation error, it looks like this:
 
 The code now extracts the `msg` field to display a human-readable error.
 
+## OAuth2 Password Flow
+
+### The Problem
+Your backend uses `OAuth2PasswordRequestForm` which expects **form-encoded data**, NOT JSON:
+
+```python
+# Backend expects this:
+form_data: OAuth2PasswordRequestForm = Depends()
+# Which reads: username=email&password=password
+```
+
+### The Fix
+Frontend now sends form-encoded data:
+```javascript
+// OAuth2PasswordRequestForm expects form data, NOT JSON
+const formBody = new URLSearchParams();
+formBody.append('username', email);
+formBody.append('password', password);
+
+fetch(url, {
+  method: 'POST',
+  headers: { 
+    'Content-Type': 'application/x-www-form-urlencoded',
+  },
+  body: formBody.toString(),  // "username=test@example.com&password=123456"
+})
+```
+
+### Important: User Must Be Registered First!
+The backend uses `MOCK_USERS` dictionary. You must:
+1. Call `/api/auth/register` first to create the user
+2. Then call `/api/auth/login` with the same credentials
+3. The login checks: `MOCK_USERS.get(form_data.username)`
+
