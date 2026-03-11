@@ -79,13 +79,67 @@ function AuthForm() {
     if (!validateSignIn()) return;
     
     setIsLoading(true);
-    const result = await login(signInData.email, signInData.password);
-    setIsLoading(false);
     
-    if (result.success) {
-      router.push(redirect);
-    } else {
-      setError(result.error || 'Login failed');
+    try {
+      // Call the Next.js API route which proxies to backend
+      const loginUrl = '/api/auth/login';
+      console.log('Signin URL:', loginUrl);
+      
+      // OAuth2PasswordRequestForm expects form data
+      const formBody = new URLSearchParams();
+      formBody.append('username', signInData.email);
+      formBody.append('password', signInData.password);
+      
+      const res = await fetch(loginUrl, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formBody.toString(),
+        credentials: 'include'
+      });
+      
+      const response = await res.json();
+      console.log('Signin response status:', res.status);
+      console.log('Signin response:', response);
+      
+      if (res.ok && response.access_token) {
+        // IMMEDIATELY save token to localStorage before anything else
+        localStorage.setItem('access_token', response.access_token);
+        console.log('Token saved to localStorage immediately after signin');
+        
+        // Also save to cookie for middleware
+        const expires = new Date();
+        expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000);
+        document.cookie = `access_token=${response.access_token};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+        
+        // Now call the login function to update auth context
+        await login(signInData.email, signInData.password);
+        
+        // Redirect to dashboard
+        router.push(redirect);
+      } else {
+        // Handle error
+        let errorMessage = 'Login failed';
+        
+        if (response.detail) {
+          if (Array.isArray(response.detail)) {
+            errorMessage = response.detail.map((err: any) => err.msg || err.message || JSON.stringify(err)).join(', ');
+          } else if (typeof response.detail === 'object') {
+            errorMessage = response.detail.msg || response.detail.message || JSON.stringify(response.detail);
+          } else {
+            errorMessage = response.detail;
+          }
+        }
+        
+        console.log('Login error message:', errorMessage);
+        setError(errorMessage);
+      }
+    } catch (error) {
+      console.error('Signin error:', error);
+      setError('Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -98,8 +152,8 @@ function AuthForm() {
     setIsLoading(true);
     
     try {
-      // Use centralized API function to get the backend URL
-      const registerUrl = buildApiUrl('/api/auth/register');
+      // Call the Next.js API route which proxies to backend
+      const registerUrl = '/api/auth/register';
       console.log('Signup URL:', registerUrl);
       
       const res = await fetch(registerUrl, {
